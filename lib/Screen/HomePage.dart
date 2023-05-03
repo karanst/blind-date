@@ -253,9 +253,9 @@ class _HomePageState extends State<HomePage>
                     children: [
                       // _deliverPincode(),
                       // _catList(),
-                      _firstHeader(),
+                      // _firstHeader(),
                       _slider(),
-                      _catList(),
+                      // _catList(),
                       // Container(
                       //   margin: EdgeInsets.all(12),
                       //   child:  StaggeredGridView.countBuilder(

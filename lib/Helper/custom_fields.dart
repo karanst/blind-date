@@ -25,7 +25,7 @@ class CustomFields extends StatelessWidget {
       child: TextFormField(
         style: TextStyle(
             color: Theme.of(context).colorScheme.fontColor),
-        keyboardType: TextInputType.number,
+        keyboardType: keyboard,
         maxLength: mxLength,
         controller: controller,
         validator: validate,

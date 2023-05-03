@@ -13,7 +13,7 @@ import 'package:blind_date/Screen/Login.dart';
 import 'package:blind_date/Screen/MyProfile.dart';
 import 'package:blind_date/Screen/Product_Detail.dart';
 import 'package:blind_date/Screen/SendOtp.dart';
-import 'package:blind_date/Screen/my_leads.dart';
+import 'package:blind_date/Screen/my_restaurants.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -196,13 +196,8 @@ class _HomePageState extends State<Dashboard> with TickerProviderStateMixin {
         body: TabBarView(
           controller: _tabController,
           children: [
+            MyRestaurants(),
             HomePage(),
-            MyLeads(),
-            // AllCategory(),
-            // Sale(),
-            // Cart(
-            //   fromBottom: true,
-            // ),
             MyProfile(),
           ],
         ),

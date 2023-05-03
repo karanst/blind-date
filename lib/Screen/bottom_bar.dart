@@ -5,7 +5,7 @@ import 'package:blind_date/Helper/Color.dart';
 import 'package:blind_date/Helper/Session.dart';
 import 'package:blind_date/Screen/HomePage.dart';
 import 'package:blind_date/Screen/MyProfile.dart';
-import 'package:blind_date/Screen/my_leads.dart';
+import 'package:blind_date/Screen/my_restaurants.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,7 +22,6 @@ class Dashboard1 extends StatefulWidget {
 
 class _Dashboard1State extends State<Dashboard1> {
 
-  int _currentIndex = 0;
   var _selBottom = 0;
   
 
@@ -67,6 +66,7 @@ class _Dashboard1State extends State<Dashboard1> {
         animationCurve: Curves.easeIn,
         height: 50,
         backgroundColor: Colors.white.withOpacity(0.9),
+        buttonBackgroundColor: colors.primary,
         // backgroundColor: Color(0xfff4f4f4),
         items: <Widget>[
 
@@ -75,10 +75,11 @@ class _Dashboard1State extends State<Dashboard1> {
             padding: const EdgeInsets.all(4.0),
             child: ImageIcon(
               AssetImage(
-                  _currentIndex == 0?
+                  currentIndex == 0?
                   'assets/icons/restaurants-fill.png'
                       : 'assets/icons/restaurants-unfill.png'),
-              color: colors.primary,
+              color:   currentIndex == 0 ? colors.whiteTemp
+              : colors.primary,
             ),
           ),
 
@@ -86,10 +87,11 @@ class _Dashboard1State extends State<Dashboard1> {
             padding: const EdgeInsets.all(4.0),
             child: ImageIcon(
               AssetImage(
-                  _currentIndex == 1 ?
+                  currentIndex == 1 ?
                   'assets/icons/home-fill.png'
                       : 'assets/icons/home-unfill.png'),
-              color: colors.primary,
+              color:  currentIndex == 1 ? colors.whiteTemp
+              : colors.primary,
             ),
           ),
 
@@ -97,10 +99,11 @@ class _Dashboard1State extends State<Dashboard1> {
             padding: const EdgeInsets.all(4.0),
             child: ImageIcon(
               AssetImage(
-                  _currentIndex == 2 ?
+                  currentIndex == 2 ?
                   'assets/icons/Profile-fill.png'
                       : 'assets/icons/Profile-unfill.png'),
-              color: colors.primary,
+              color:   currentIndex == 2 ? colors.whiteTemp
+              : colors.primary,
             ),
           ),
 
@@ -108,8 +111,8 @@ class _Dashboard1State extends State<Dashboard1> {
         onTap: (index) {
           print("current index here ${index}");
           setState(() {
-            _currentIndex = index;
-            _selBottom = _currentIndex;
+            currentIndex = index;
+            _selBottom = currentIndex;
             print("sel bottom ${_selBottom}");
             //_pageController.jumpToPage(index);
           });
@@ -121,7 +124,7 @@ class _Dashboard1State extends State<Dashboard1> {
   @override
   Widget build(BuildContext context) {
     List<dynamic> _handlePagesDelivery = [
-      HomePage(), MyLeads(), MyProfile()
+       MyRestaurants(),HomePage(), MyProfile()
     ];
     return
       WillPopScope(
@@ -167,7 +170,7 @@ class _Dashboard1State extends State<Dashboard1> {
               appBar: getAppBar("", context),
                 body:
                 // type == "2" || type == "3" || type == "4" ?
-                _handlePagesDelivery[_currentIndex],
+                _handlePagesDelivery[currentIndex],
                 // : _handlePages[_currentIndex],
                 bottomNavigationBar:
                 // type == "2" || type == "3" || type == "4" ?

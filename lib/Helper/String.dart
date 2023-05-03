@@ -20,6 +20,10 @@ final Uri getVerifyUserApi = Uri.parse(baseUrl + 'verify_user');
 final Uri sendOtpApi = Uri.parse(baseUrl + 'send_otp');
 final Uri verifyOtpApi = Uri.parse(baseUrl + 'verify_otp');
 final Uri signUpApi = Uri.parse(baseUrl + 'signup');
+final Uri completeProfileApi = Uri.parse(baseUrl + 'update_user_settings');
+final Uri getRestroListApi = Uri.parse(baseUrl + 'search_restaurants');
+final Uri getRestroTablesApi = Uri.parse(baseUrl + 'search_restaurants');
+
 
 final Uri referFormApi = Uri.parse(baseUrl + 'referral_form');
 final Uri referralListApi = Uri.parse(baseUrl + 'refferal_list');
@@ -27,7 +31,7 @@ final Uri withdrawRequestApi = Uri.parse(baseUrl + 'withdrawl_request');
 final Uri transactionsListApi = Uri.parse(baseUrl + 'transactions');
 final Uri requestTrainingApi = Uri.parse(baseUrl + 'tranning_request');
 final Uri referralCommissionApi = Uri.parse(baseUrl + 'user_commission');
-
+///
 ///NEW APIS////////////
 
 final Uri setFavoriteApi = Uri.parse(baseUrl + 'add_to_favorites');

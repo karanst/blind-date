@@ -142,7 +142,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
 
   Future<void> getVerifyUser() async {
     try {
-      var data = {MOBILE: mobile};
+      var data = {MOBILE: mobileController.text.toString()};
       Response response =
           await post(sendOtpApi, body: data, headers: headers).timeout(Duration(seconds: timeOut));
 
@@ -150,7 +150,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
 
       bool? error = getdata["error"];
       String? msg = getdata["message"];
-      print("this is send otp data $sendOtpApi and $getdata");
+      print("this is send otp data $sendOtpApi");
       await buttonController!.reverse();
 
       SettingProvider settingsProvider =
@@ -170,8 +170,8 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                 context,
                 MaterialPageRoute(
                     builder: (context) => VerifyOtp(
-                          mobileNumber: mobile!,
-                          countryCode: countrycode,
+                          mobileNumber: mobileController.text.toString(),
+                          countryCode: "+91",
                           otp: otp.toString(),
                      title: getTranslated(context, 'SEND_OTP_TITLE'),
                         )));

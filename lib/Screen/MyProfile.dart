@@ -7,7 +7,7 @@ import 'package:blind_date/Provider/CategoryProvider.dart';
 import 'package:blind_date/Provider/HomeProvider.dart';
 import 'package:blind_date/Screen/Dashboard.dart';
 import 'package:blind_date/Screen/HomePage.dart';
-import 'package:blind_date/Screen/my_leads.dart';
+import 'package:blind_date/Screen/my_restaurants.dart';
 import 'package:blind_date/Screen/my_leads_accounts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:blind_date/Helper/ApiBaseHelper.dart';

@@ -209,8 +209,8 @@ class _LoginPagePageState extends State<LoginPage> with TickerProviderStateMixin
       SettingProvider settingProvider =
           Provider.of<SettingProvider>(context, listen: false);
 
-      settingProvider.saveUserDetail(id!, username, email, mobile, city, area,
-          address, pincode, latitude, longitude, image, context);
+      // settingProvider.saveUserDetail(id!, username, email, mobile, city, area,
+      //     address, pincode, latitude, longitude, image, context);
 
       Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
     } else {

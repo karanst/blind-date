@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:blind_date/Model/category_model.dart';
+import 'package:blind_date/Model/my_bookings_model.dart';
 import 'package:blind_date/Screen/My_Wallet.dart';
 import 'package:blind_date/Screen/SendOtp.dart';
 import 'package:blind_date/Screen/my_leads_accounts.dart';
@@ -28,6 +29,10 @@ import 'package:blind_date/Screen/Seller_Details.dart';
 import 'package:blind_date/Screen/SubCategory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_place_picker_mb/google_maps_place_picker.dart';
 import 'package:http/http.dart';
 import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
@@ -58,6 +63,7 @@ int count = 1;
 List<Model> homeSliderList = [];
 List<Widget> pages = [];
 
+
 class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin<HomePage>, TickerProviderStateMixin {
   bool _isNetworkAvail = true;
@@ -70,6 +76,8 @@ class _HomePageState extends State<HomePage>
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
+  String? address;
+
 
   //String? curPin;
 
@@ -77,6 +85,36 @@ class _HomePageState extends State<HomePage>
   bool get wantKeepAlive => true;
 
   List<Categories> categories = [];
+
+  LocationPermission? permission;
+  Position? currentLocation;
+  double? lat, long;
+  String? currentAddress;
+
+  Future getUserCurrentLocation() async {
+    permission = await Geolocator.requestPermission();
+    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((position) {
+      if (mounted)
+        setState(() {
+          currentLocation = position;
+          lat = currentLocation!.latitude;
+          long = currentLocation!.longitude;
+        });
+    });
+    print("LOCATION===" + currentLocation.toString());
+  }
+
+  void getCurrentAddress() async {
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    List<Placemark> placemarks =
+    await placemarkFromCoordinates(position.latitude, position.longitude);
+    Placemark placemark = placemarks[0];
+    address =
+    '${placemark.street}, ${placemark.subLocality},${placemark.locality}, ${placemark.country}';
+    // print(currentAddress);
+  }
 
   getCategories() async{
     var headers = {
@@ -110,9 +148,42 @@ class _HomePageState extends State<HomePage>
       print(response.reasonPhrase);
     }
   }
+
+
+  List<Bookings> bookingList = [];
+  getMyBookings() async {
+    var headers = {
+      'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
+    };
+    var request =
+    http.MultipartRequest('POST', Uri.parse(bookingListApi.toString()));
+    request.fields.addAll({
+      'user_id' : CUR_USERID.toString()
+    });
+
+    print("this is restro request ${request.fields.toString()}");
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      String str = await response.stream.bytesToString();
+      var result = json.decode(str);
+      var finalResponse = MyBookingsModel.fromJson(result);
+      setState(() {
+        bookingList = finalResponse.data!;
+        // _isLoading = false;
+      });
+      print("this is referral data ${bookingList.length}");
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
   @override
   void initState() {
     super.initState();
+    getUserCurrentLocation();
+    getCurrentAddress();
+    getMyBookings();
     callApi();
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
@@ -225,6 +296,137 @@ class _HomePageState extends State<HomePage>
   //   );
   // }
 
+  Widget bookingCard(int index) {
+    return InkWell(
+      onTap: (){
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => TableDetails(data: bookingList[index], restroData: widget.data,)));
+      },
+      child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text('Date : ',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        Text('${bookingList[index].bookingDate.toString()}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+                      ],
+                    ),
+                    Container(
+                        height: 20,
+                        child: VerticalDivider(color: colors.primary, thickness: 1,)),
+
+                    Row(
+                      children: [
+                        Text('Time : ',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        Text('${bookingList[index].bookingTime.toString()}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+                      ],
+                    ),
+
+                  ],),
+                Divider(color: colors.primary, thickness: 1,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Booking ID : ',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5.0, bottom: 5),
+                          child: Text('Restaurant : ',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        ),
+                        Text('Table Type : ',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                      ],
+                    ),
+
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${bookingList[index].id.toString()}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5.0, bottom: 5),
+                          child: Text('${bookingList[index].storeName.toString()}',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+                        ),
+
+                        Text('${bookingList[index].tableName.toString()}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+
+                      ],
+
+                    )
+                  ],
+                ),
+                Divider(color: colors.primary, thickness: 1,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Approx Amount : ', style: TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 14, color: colors.blackTemp
+                    ),),
+                    Container(
+                      padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+                      decoration: BoxDecoration(
+                          color: colors.primary,
+                          borderRadius: BorderRadius.circular(10)
+                      ),
+                      child: Center(
+                        child: Text("₹ ${bookingList[index].approxAmount.toString()}",
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.whiteTemp)),
+
+                      ),
+                    )
+                  ],
+                ),
+
+              ],
+            ),
+          )),
+    );
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -246,15 +448,127 @@ class _HomePageState extends State<HomePage>
               onRefresh: _refresh,
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 20.0, right: 20, top: 20, bottom: 25),
+                  padding: const EdgeInsets.only(left: 0.0, right: 0, top: 5, bottom: 25),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PlacePicker(
+                                apiKey: Platform.isAndroid
+                                    ? "AIzaSyB0uPBgryG9RisP8_0v50Meds1ZePMwsoY"
+                                    : "AIzaSyB0uPBgryG9RisP8_0v50Meds1ZePMwsoY",
+                                onPlacePicked: (result) {
+                                  print(result.formattedAddress);
+                                  setState(() {
+                                    address =
+                                        result.formattedAddress.toString();
+                                    lat = result.geometry!.location.lat;
+                                    long = result.geometry!.location.lng;
+                                  });
+                                  Navigator.of(context).pop();
+                                },
+                                initialPosition: LatLng(
+                                    22.719568,75.857727),
+                                useCurrentLocation: true,
+                              ),
+                            ),
+                          );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (context) => PlacePicker(
+                          //       apiKey: Platform.isAndroid
+                          //           ? "AIzaSyBxsWdUSLMXzjxD6X-IOKjZMp3aMoxJfKc"
+                          //           : "AIzaSyBxsWdUSLMXzjxD6X-IOKjZMp3aMoxJfKc",
+                          //       onPlacePicked: (result) {
+                          //         print(result.formattedAddress);
+                          //         setState(() {
+                          //           addressController.text =
+                          //               result.formattedAddress.toString();
+                          //           pickLat =
+                          //               result.geometry!.location.lat;
+                          //           pickLong =
+                          //               result.geometry!.location.lng;
+                          //         });
+                          //         Navigator.of(context).pop();
+                          //       },
+                          //       initialPosition: LatLng(22.719568,75.857727
+                          //           // double.parse(widget.lat.toString()), double.parse(widget.long.toString())
+                          //   ),
+                          //       useCurrentLocation: true,
+                          //     ),
+                          //   ),
+                          // );
+                          // _getPickLocation();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10.0, right: 10),
+                          child: Container(
+                              padding: EdgeInsets.only(left: 15, top: 4, bottom: 4, right: 8),
+                              height: 40,
+                              decoration: BoxDecoration(
+                                  color: colors.whiteTemp,
+                                  borderRadius: BorderRadius.circular(50),
+                                  border: Border.all(color: colors.primary)),
+                              width: MediaQuery.of(context).size.width,
+                              child:
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Icon(Icons.location_on_outlined, color: colors.primary,),
+                                      Container(
+                                        width: MediaQuery.of(context).size.width - 80,
+                                        child: Text(address == null ?"Select Location"
+                                        : address.toString(),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                          color: Theme.of(context).colorScheme.fontColor,
+                                          fontSize: 16
+                                        ),),
+                                      ),
+                                    ],
+                                  )
+
+                              ),
+                        ),
+                      ),
                       // _deliverPincode(),
                       // _catList(),
                       // _firstHeader(),
                       _slider(),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 15.0, bottom: 5),
+                        child: Text('My Bookings', style: TextStyle(
+                          color: colors.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16
+                        ),),
+                      ),
+
+                      bookingList.isNotEmpty ?
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10, right: 10.0),
+                        child: ListView.builder(
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: bookingList.length,
+                            itemBuilder: (context, index) {
+                              return bookingCard(index);
+                              //restroCard(index);
+                            }),
+                      )
+                      : Container(
+                        height: MediaQuery.of(context).size.width,
+                        child: Center(
+                          child: Text(" No bookings found!"),
+                        ),
+                      ),
                       // _catList(),
                       // Container(
                       //   margin: EdgeInsets.all(12),
@@ -328,7 +642,7 @@ class _HomePageState extends State<HomePage>
           alignment: Alignment.bottomCenter,
                 children: [
                   Container(
-                    height: height,
+                    height: 200,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20)
                     ),
@@ -1411,6 +1725,9 @@ class _HomePageState extends State<HomePage>
       getSetting();
       getSlider();
       getCat();
+      getUserCurrentLocation();
+      getCurrentAddress();
+      getMyBookings();
       // getSeller();
       getSection();
       getOfferImages();
@@ -1764,7 +2081,6 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildImagePageItem(Model slider) {
     double height = deviceWidth! / 0.5;
-
     return GestureDetector(
       child: Container(
         decoration: BoxDecoration(

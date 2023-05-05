@@ -93,6 +93,7 @@ class SettingProvider {
     userProvider.setCartCount("");
     userProvider.setProfilePic("");
     userProvider.setMobile("");
+    userProvider.setGender("");
     userProvider.setEmail("");
     await _sharedPreferences.clear();
   }
@@ -102,6 +103,7 @@ class SettingProvider {
       String? name,
       String? email,
       String? mobile,
+      String? gender,
       String? city,
       String? area,
       String? address,
@@ -116,6 +118,7 @@ class SettingProvider {
     waitList.add(_sharedPreferences.setString(USERNAME, name ?? ""));
     waitList.add(_sharedPreferences.setString(EMAIL, email ?? ""));
     waitList.add(_sharedPreferences.setString(MOBILE, mobile ?? ""));
+    waitList.add(_sharedPreferences.setString('gender', gender ?? ""));
     waitList.add(_sharedPreferences.setString(CITY, city ?? ""));
     waitList.add(_sharedPreferences.setString(AREA, area ?? ""));
     waitList.add(_sharedPreferences.setString(ADDRESS, address ?? ""));
@@ -131,6 +134,7 @@ class SettingProvider {
     userProvider.setCartCount("");
     userProvider.setProfilePic(image ?? "");
     userProvider.setMobile(mobile ?? "");
+    userProvider.setGender(gender ?? "");
     userProvider.setEmail(email ?? "");
     await Future.wait(waitList);
   }

@@ -7,6 +7,7 @@ class UserProvider extends ChangeNotifier {
       _curBal = '',
       _myLeads = '',
       _mob = '',
+  _gender = '',
       _profilePic = '',
       _email = '';
   String?  _userId = '';
@@ -26,6 +27,8 @@ class UserProvider extends ChangeNotifier {
   String get myLeads => _myLeads;
 
   String get mob => _mob;
+
+  String get gender => _gender;
 
   String get profilePic => _profilePic;
 
@@ -61,6 +64,10 @@ class UserProvider extends ChangeNotifier {
 
   void setMobile(String count) {
     _mob = count;
+    notifyListeners();
+  }
+  void setGender(String count) {
+    _gender = count;
     notifyListeners();
   }
 

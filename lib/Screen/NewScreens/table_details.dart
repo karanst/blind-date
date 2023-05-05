@@ -5,7 +5,6 @@ import 'package:blind_date/Helper/Stripe_Service.dart';
 import 'package:blind_date/Helper/user_custom_radio.dart';
 import 'package:blind_date/Model/restaurant_model.dart';
 import 'package:blind_date/Provider/SettingProvider.dart';
-import 'package:blind_date/Screen/NewScreens/table_details.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart' as http;
 import 'package:blind_date/Helper/AppBtn.dart';
@@ -14,24 +13,25 @@ import 'package:blind_date/Helper/Session.dart';
 import 'package:blind_date/Helper/String.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import '../../Model/Transaction_Model.dart';
 
-class RestaurantDetails extends StatefulWidget {
-  final Restaurants? data;
-  final String? id;
-  const RestaurantDetails({Key? key, this.data, this.id}) : super(key: key);
+class TableDetails extends StatefulWidget {
+  final Tables? data;
+  final Restaurants? restroData;
+  const TableDetails({Key? key, this.data, this.restroData}) : super(key: key);
 
   @override
-  State<RestaurantDetails> createState() => _RestaurantDetailsState();
+  State<TableDetails> createState() => _TableDetailsState();
 }
 
 bool _isLoading = true;
 
-class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProviderStateMixin {
-  List<Tables> tablesList = [];
+class _TableDetailsState extends State<TableDetails> with TickerProviderStateMixin {
+
 
   bool _isNetworkAvail = true;
   Animation? buttonSqueezeanimation;
@@ -72,33 +72,38 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
   bool isLoadingmore = true, _isLoading = true, payTesting = true;
   final paystackPlugin = PaystackPlugin();
 
-  getRestaurantTable() async {
-    var headers = {
-      'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
-    };
-    var request =
-    http.MultipartRequest('POST', Uri.parse(getRestroListApi.toString()));
-    request.fields.addAll({
-      'user_type': 'female',
-      'id': widget.id.toString()
-    });
+  String? selectedDate;
 
-    print("this is restro request ${request.fields.toString()}");
-    request.headers.addAll(headers);
+  TimeOfDay? selectedTime;
+  TextEditingController startTimeController = TextEditingController();
 
-    http.StreamedResponse response = await request.send();
-    if (response.statusCode == 200) {
-      String str = await response.stream.bytesToString();
-      var result = json.decode(str);
-      var finalResponse = RestaurantModel.fromJson(result);
+
+  _selectStartTime(BuildContext context) async {
+    final TimeOfDay? timeOfDay = await showTimePicker(
+        context: context,
+        useRootNavigator: true,
+        initialTime: TimeOfDay.now(),
+        builder: (BuildContext context, Widget? child) {
+          return Theme(
+            data: ThemeData.light().copyWith(
+                colorScheme: ColorScheme.light(primary: colors.primary),
+                buttonTheme: ButtonThemeData(
+                    colorScheme: ColorScheme.light(primary: colors.primary))),
+            child: MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(alwaysUse24HourFormat: false),
+                child: child!),
+          );
+        });
+    if (timeOfDay != null && timeOfDay != selectedTime) {
       setState(() {
-        tablesList = finalResponse.data![0].tables!;
-        _isLoading = false;
+        selectedTime = timeOfDay.replacing(hour: timeOfDay.hourOfPeriod);
+        startTimeController.text = selectedTime!.format(context);
       });
-      print("this is referral data ${tablesList.length}");
-    } else {
-      print(response.reasonPhrase);
     }
+    var per = selectedTime!.period.toString().split(".");
+    print(
+        "selected time here ${selectedTime!.format(context).toString()} and ${per[1]}");
   }
 
   void openRequestTrainingBottomSheet() {
@@ -303,7 +308,7 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
   //       Fluttertoast.showToast(msg: '${result['message']}');
   //       getRestroTables();
   //     }
-  //     print("this is referral data ${tablesList.length}");
+  //     print("this is referral data ${widget.data.length}");
   //   }
   //   else {
   //     print(response.reasonPhrase);
@@ -357,7 +362,7 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
     await Future.delayed(Duration(seconds: 3)).then(
           (onvalue) {
         completer.complete();
-        getRestaurantTable();
+        // getRestaurantTable();
         setState(
               () {
             _isLoading = true;
@@ -380,17 +385,184 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
             padding: const EdgeInsets.all(12.0),
             child: Column(
               children: [
-                Text(widget.data!.storeName.toString(), style: TextStyle(
+                Text(widget.data!.name.toString(), style: TextStyle(
                     color: colors.primary, fontSize: 20, fontWeight: FontWeight.w600
                 ),),
                 const SizedBox(height: 10,),
-                ListView.builder(
-                    physics: NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: tablesList.length,
-                    itemBuilder: (context, index) {
-                      return restroCard(index);
-                    }),
+               restroCard(),
+                const SizedBox(height: 10,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding:
+                          const EdgeInsets.only(left: 15.0, top: 10, bottom: 5),
+                          child: Text(
+                            "Booking Date",
+                            style: TextStyle(
+                                color: colors.primary, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () async {
+                            DateTime? pickedDate = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(1950),
+                                lastDate: DateTime(2100),
+                                builder: (context, child) {
+                                  return Theme(
+                                      data: Theme.of(context).copyWith(
+                                          colorScheme: ColorScheme.light(
+                                            primary: colors.primary,
+                                          )),
+                                      child: child!);
+                                });
+
+                            if (pickedDate != null) {
+                              //pickedDate output format => 2021-03-10 00:00:00.000
+                              String formattedDate =
+                              DateFormat('yyyy-MM-dd').format(pickedDate);
+                              //formatted date output using intl package =>  2021-03-16
+                              setState(() {
+                                selectedDate = formattedDate; //set output date to TextField value.
+                              });
+                            }
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(8),
+                            height: 50,
+                            width: MediaQuery.of(context).size.width / 2 - 20,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.lightWhite,
+                                borderRadius: BorderRadius.circular(40),
+                                boxShadow: <BoxShadow>[
+                                  BoxShadow(
+                                      color: Colors.grey,
+                                      blurRadius: 5.0,
+                                      offset: Offset(0.75, 0.75)
+                                  )
+                                ],
+                              // color: Colors.white,
+                              //   border: Border.all(color: Colors.grey)
+                            ),
+                            child:  Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    selectedDate == null || selectedDate == ''
+                                        ?
+                                    Text(
+                                      "Select Date",
+                                      style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .fontColor))
+                                      : Text(
+                                      "${selectedDate.toString()}",
+                          ),
+                                    Icon(Icons.calendar_month, color: colors.primary,)
+
+                                  ],
+                                )
+
+                          ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding:
+                          const EdgeInsets.only(left: 15.0, top: 10, bottom: 5),
+                          child: Text(
+                            "Booking Time",
+                            style: TextStyle(
+                                color: colors.primary, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            _selectStartTime(context);
+                          },
+                          child: Container(
+                              height: 50,
+                              width: MediaQuery.of(context).size.width/2- 25,
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              alignment: Alignment.centerLeft,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.lightWhite,
+                                borderRadius: BorderRadius.circular(40),
+                                boxShadow: <BoxShadow>[
+                                  BoxShadow(
+                                      color: Colors.grey,
+                                      blurRadius: 5.0,
+                                      offset: Offset(0.75, 0.75)
+                                  )
+                                ],
+                                // border: Border.all(
+                                //   color: Theme.of(context).colorScheme.fontClr,
+                                // )
+                              ),
+                              child:
+                              selectedTime != null
+                                  ?
+                              Row (
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text("${selectedTime!.format(context)}",
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.fontColor,
+                                    ),),
+                                  Icon(Icons.access_time,
+                                    color: colors.primary,)
+                                ],
+                              )
+                                  : Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Select Time",
+                                    style: TextStyle(
+                                        color: Theme.of(context).colorScheme.fontColor,
+                                        fontSize: 15),
+                                  ),
+                                  Icon(Icons.access_time,
+                                    color: colors.primary,)
+                                ],
+                              )),
+                          // TextFormField( controller: locationController,
+                          //   validator: (v){
+                          //     if(v!.isEmpty){
+                          //       return "Enter time";
+                          //     }
+                          //   },
+                          //   readOnly: true,
+                          //   decoration: InputDecoration(
+                          //       hintText: "Select time",
+                          //       border: OutlineInputBorder(
+                          //           borderRadius: BorderRadius.circular(7),
+                          //           borderSide: BorderSide(color: appColorBlack.withOpacity(0.5))
+                          //       )
+                          //   ),),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 30,),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: ElevatedButton(onPressed: (){
+                    razorpayPayment(double.parse(widget.data!.price.toString()));
+                  }, child: Text("Book Now", style: TextStyle(color: colors.whiteTemp, fontWeight: FontWeight.w600, fontSize: 16),),
+                    style: ElevatedButton.styleFrom(primary: colors.primary, shape: StadiumBorder(),
+                        fixedSize: Size(MediaQuery.of(context).size.width-40, 40)),),
+                ),
+                const SizedBox(height: 30,),
               ],
             ),
           ),
@@ -400,90 +572,83 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
 
 
 
-  Widget restroCard(int index) {
+  Widget restroCard() {
     return InkWell(
       onTap: (){
-         Navigator.push(context, MaterialPageRoute(builder: (context) => TableDetails(data: tablesList[index], restroData: widget.data,)));
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => RestaurantDetails(id: restaurantList[index].id.toString())));
       },
       child: Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Padding(
                     padding: const EdgeInsets.all(10),
-                    child: tablesList[index].image == null ||
-                        tablesList[index].image ==
+                    child: widget.data!.image == null ||
+                        widget.data!.image ==
                             'https://developmentalphawizz.com/blind_date/'
                         ? Container(
                       padding: EdgeInsets.all(5),
                       decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(15),
                           border: Border.all(color: colors.primary, width: 2)),
                       child: Container(
-                        height: 80,
-                        width: 80,
+                        height: MediaQuery.of(context).size.width - 120,
+                        width: MediaQuery.of(context).size.width - 100 ,
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(15),
                           image: DecorationImage(
                               image:
                               AssetImage('assets/images/placeholder.png'),
                               fit: BoxFit.fitHeight),
                           // borderRadius: BorderRadius.circular(15)
                         ),
-                        // child: Image.network(tablesList[index].image.toString(), width: 100, height: 100,)
+                        // child: Image.network(widget.data[index].image.toString(), width: 100, height: 100,)
                       ),
                     )
                         : Container(
-                      padding: EdgeInsets.all(5),
+                      padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(15),
                           border: Border.all(color: colors.primary, width: 2)),
                       child: Container(
-                        height: 80,
-                        width: 80,
+                        height: MediaQuery.of(context).size.width - 120,
+                        width: MediaQuery.of(context).size.width - 100 ,
                         decoration: BoxDecoration(
                           // border: Border.all(color: primary, width: 1),
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(15),
                           // borderRadius: BorderRadius.circular(12),
                           image: DecorationImage(
                               image: NetworkImage(
-                                  tablesList[index].image.toString()),
+                                  widget.data!.image.toString()),
                               fit: BoxFit.fill),
                           // borderRadius: BorderRadius.circular(15)
                         ),
-                        // child: Image.network(tablesList[index].image.toString(), width: 100, height: 100,)
+                        // child: Image.network(widget.data[index].image.toString(), width: 100, height: 100,)
                       ),
                     )),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: MediaQuery.of(context).size.width/2,
-                      child: Text(tablesList[index].name.toString(),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,  color: colors.blackTemp)),
-                    ),
-                    const SizedBox(height: 5,),
-                    Container(
-                      width: MediaQuery.of(context).size.width/2,
-                      child: Text('Benefits : ${tablesList[index].benifits.toString()}',
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
-                    ),
-                    const SizedBox(height: 5,),
-                    Text('Table Price : ₹ ${tablesList[index].price.toString()}', style: TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 14, color: colors.blackTemp
-                    ),),
+                // Text(widget.data!.name.toString(),
+                //     overflow: TextOverflow.ellipsis,
+                //     maxLines: 2,
+                //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,  color: colors.primary)),
+                const SizedBox(height: 5,),
+                Text("Benefits : ${widget.data!.benifits.toString()}",
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                const SizedBox(height: 5,),
+                Text('Booking amount : ₹ ${widget.restroData!.bookingAmount.toString()}', style: TextStyle(
+                    fontWeight: FontWeight.w500, fontSize: 16, color: colors.blackTemp
+                ),),
+                const SizedBox(height: 5,),
+                Text('Table Price : ₹ ${widget.data!.price.toString()}', style: TextStyle(
+                    fontWeight: FontWeight.w500, fontSize: 16, color: colors.blackTemp
+                ),),
+                const SizedBox(height: 10,),
 
-                  ],
-                ),
+
                 // Padding(
                 //   padding: const EdgeInsets.only(top: 60.0, right: 5),
                 //   child: Container(
@@ -493,7 +658,7 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
                 //         color: colors.primary
                 //     ),
                 //     child: Center(
-                //       child: Text('₹ ${tablesList[index].price.toString()}', style: TextStyle(
+                //       child: Text('₹ ${widget.data[index].price.toString()}', style: TextStyle(
                 //           fontWeight: FontWeight.w600, fontSize: 14, color: colors.whiteTemp
                 //       ),),
                 //     ),
@@ -505,7 +670,7 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
 
   }
 
-  bookingNow() async {
+  bookingNow(String transID) async {
 
     var headers = {
       'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
@@ -514,15 +679,15 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
     http.MultipartRequest('POST', Uri.parse(completeProfileApi.toString()));
 
     request.fields.addAll({
-    'restaurant_id': widget.data!.id.toString(),
-    'table_id': tablesList[0].id.toString(),
-    'approx_amount':'1000',
-    'date':'2023-05-05',
-    'time':'10:00',
-    'booking_amount':'100',
-    'booking_transaction_id':'ABC7896543214',
-    'booking_payment_status':'1',
-    'booking_id':'22' ,
+      'restaurant_id': widget.data!.id.toString(),
+      'table_id': widget.data!.id.toString(),
+      'approx_amount': widget.data!.price.toString(),
+      'date': selectedDate.toString(),
+      'time': selectedTime.toString(),
+      'booking_amount': widget.restroData!.bookingAmount.toString(),
+      'booking_transaction_id':transID.toString(),
+      'booking_payment_status':'1',
+      'booking_id':'22' ,
       'user_id': CUR_USERID.toString()
     });
 
@@ -560,58 +725,62 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
 
   ///RAZORPAY
   ///
-    void _handlePaymentSuccess(PaymentSuccessResponse response) {
-      bookingNow();
-      // placeOrder(response.paymentId);
-      // sendRequest(response.paymentId, "RazorPay");
-    }
+  String? transID;
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+   setState(() {
+     transID = response.paymentId!;
+   });
+    bookingNow(transID!);
+    // placeOrder(response.paymentId);
+    // sendRequest(response.paymentId, "RazorPay");
+  }
 
-    void _handlePaymentError(PaymentFailureResponse response) {
-      setSnackbar(response.message!, context);
+  void _handlePaymentError(PaymentFailureResponse response) {
+    setSnackbar(response.message!, context);
+    if (mounted)
+      setState(() {
+        _isProgress = false;
+      });
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    print("EXTERNAL_WALLET: " + response.walletName!);
+  }
+
+  razorpayPayment(double price) async {
+    SettingProvider settingsProvider =
+    Provider.of<SettingProvider>(this.context, listen: false);
+
+    String? contact = settingsProvider.mobile;
+    String? email = settingsProvider.email;
+
+    double amt = price * 100;
+
+    if (contact != '' && email != '') {
       if (mounted)
         setState(() {
-          _isProgress = false;
+          _isProgress = true;
         });
-    }
 
-    void _handleExternalWallet(ExternalWalletResponse response) {
-      print("EXTERNAL_WALLET: " + response.walletName!);
-    }
+      var options = {
+        KEY: razorpayId,
+        AMOUNT: amt.toString(),
+        NAME: settingsProvider.userName,
+        'prefill': {CONTACT: contact, EMAIL: email},
+      };
 
-    razorpayPayment(double price) async {
-      SettingProvider settingsProvider =
-          Provider.of<SettingProvider>(this.context, listen: false);
-
-      String? contact = settingsProvider.mobile;
-      String? email = settingsProvider.email;
-
-      double amt = price * 100;
-
-      if (contact != '' && email != '') {
-        if (mounted)
-          setState(() {
-            _isProgress = true;
-          });
-
-        var options = {
-          KEY: razorpayId,
-          AMOUNT: amt.toString(),
-          NAME: settingsProvider.userName,
-          'prefill': {CONTACT: contact, EMAIL: email},
-        };
-
-        try {
-          _razorpay.open(options);
-        } catch (e) {
-          debugPrint(e.toString());
-        }
-      } else {
-        if (email == '')
-          setSnackbar(getTranslated(context, 'emailWarning')!, context);
-        else if (contact == '')
-          setSnackbar(getTranslated(context, 'phoneWarning')!, context);
+      try {
+        _razorpay.open(options);
+      } catch (e) {
+        debugPrint(e.toString());
       }
+    } else {
+      if (email == '')
+        setSnackbar(getTranslated(context, 'emailWarning')!, context);
+      else if (contact == '')
+        setSnackbar(getTranslated(context, 'phoneWarning')!, context);
     }
+  }
   ///
   ///
   ///
@@ -668,9 +837,9 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
 
             for (int i = 0; i < paymentMethodList.length; i++) {
               payModel.add(RadioModel(
-                  isSelected: i == selectedMethod ? true : false,
-                  name: paymentMethodList[i],
-                  ));
+                isSelected: i == selectedMethod ? true : false,
+                name: paymentMethodList[i],
+              ));
             }
           }
         }
@@ -694,7 +863,7 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
   @override
   void initState() {
     super.initState();
-    getRestaurantTable();
+    // getRestaurantTable();
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
@@ -717,74 +886,74 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80),
-        child: AppBar(
-          centerTitle: true,
-          title: Image.asset('assets/images/homelogo.png', height: 60,),
-          backgroundColor: colors.primary,
-          leading: IconButton(
-            onPressed: (){
-              Navigator.pop(context);
-            },
-            icon: Icon(Icons.arrow_back_ios, color: colors.whiteTemp,),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(80),
+          child: AppBar(
+            centerTitle: true,
+            title: Image.asset('assets/images/homelogo.png', height: 60,),
+            backgroundColor: colors.primary,
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: Icon(Icons.arrow_back_ios, color: colors.whiteTemp,),
+            ),
+            // actions: [
+            //   Padding(
+            //     padding: const EdgeInsets.all(8.0),
+            //     child: InkWell(
+            //       onTap: () async {
+            //         // var result = await Navigator.push(context, MaterialPageRoute(builder: (context)=> AddTable()));
+            //         // if(result != null){
+            //         //   getRestroTables();
+            //         // }
+            //       },
+            //       child: Container(
+            //         padding: EdgeInsets.all(8),
+            //         decoration: BoxDecoration(
+            //             border: Border.all(color: colors.whiteTemp),
+            //             borderRadius: BorderRadius.circular(30)
+            //         ),
+            //         child: Row(
+            //           mainAxisAlignment: MainAxisAlignment.center,
+            //           children: [
+            //             Text("Add Table ", style: TextStyle(
+            //                 color: colors.whiteTemp,
+            //                 fontWeight: FontWeight.w600,
+            //                 fontSize: 16
+            //             ),),
+            //             Icon(Icons.add_box, color: colors.whiteTemp,)
+            //           ],
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            //
+            //   // SizedBox(
+            //   //   height: 30,
+            //   //   child: Container(
+            //   //     height: 30,
+            //   //     width: 100,
+            //   //     decoration: BoxDecoration(
+            //   //       color: Colors.colors.whiteTemp, borderRadius: BorderRadius.circular(20)
+            //   //     ),
+            //   //     child: Center(
+            //   //       child: Row(
+            //   //         mainAxisAlignment: MainAxisAlignment.center,
+            //   //         children: [
+            //   //           Text("Add Table", style: TextStyle(
+            //   //             color: primary
+            //   //           ),),
+            //   //           Icon(Icons.add_box, color: primary,)
+            //   //         ],
+            //   //       ),
+            //   //     ),
+            //   //   ),
+            //   // )
+            //
+            // ],
           ),
-          // actions: [
-          //   Padding(
-          //     padding: const EdgeInsets.all(8.0),
-          //     child: InkWell(
-          //       onTap: () async {
-          //         // var result = await Navigator.push(context, MaterialPageRoute(builder: (context)=> AddTable()));
-          //         // if(result != null){
-          //         //   getRestroTables();
-          //         // }
-          //       },
-          //       child: Container(
-          //         padding: EdgeInsets.all(8),
-          //         decoration: BoxDecoration(
-          //             border: Border.all(color: colors.whiteTemp),
-          //             borderRadius: BorderRadius.circular(30)
-          //         ),
-          //         child: Row(
-          //           mainAxisAlignment: MainAxisAlignment.center,
-          //           children: [
-          //             Text("Add Table ", style: TextStyle(
-          //                 color: colors.whiteTemp,
-          //                 fontWeight: FontWeight.w600,
-          //                 fontSize: 16
-          //             ),),
-          //             Icon(Icons.add_box, color: colors.whiteTemp,)
-          //           ],
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          //
-          //   // SizedBox(
-          //   //   height: 30,
-          //   //   child: Container(
-          //   //     height: 30,
-          //   //     width: 100,
-          //   //     decoration: BoxDecoration(
-          //   //       color: Colors.colors.whiteTemp, borderRadius: BorderRadius.circular(20)
-          //   //     ),
-          //   //     child: Center(
-          //   //       child: Row(
-          //   //         mainAxisAlignment: MainAxisAlignment.center,
-          //   //         children: [
-          //   //           Text("Add Table", style: TextStyle(
-          //   //             color: primary
-          //   //           ),),
-          //   //           Icon(Icons.add_box, color: primary,)
-          //   //         ],
-          //   //       ),
-          //   //     ),
-          //   //   ),
-          //   // )
-          //
-          // ],
         ),
-      ),
         body: bodyWidget());
   }
 }

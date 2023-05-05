@@ -602,7 +602,7 @@ class _MyRestaurantsState extends State<MyRestaurants>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        width: MediaQuery.of(context).size.width/2-10,
+                        width: MediaQuery.of(context).size.width/2-20,
                         child: Text(restaurantList[index].storeName.toString(),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 2,
@@ -610,7 +610,7 @@ class _MyRestaurantsState extends State<MyRestaurants>
                       ),
                       const SizedBox(height: 5,),
                       Container(
-                        width: MediaQuery.of(context).size.width/2-10,
+                        width: MediaQuery.of(context).size.width/2-20,
                         child: Text(restaurantList[index].address.toString(),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 2,
@@ -624,7 +624,7 @@ class _MyRestaurantsState extends State<MyRestaurants>
                 Padding(
                   padding: const EdgeInsets.only(top: 60.0, right: 5),
                   child: Container(
-                    width: 50,
+                     width: 40,
                     padding: EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(40),

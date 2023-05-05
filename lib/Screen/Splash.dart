@@ -67,6 +67,7 @@ class _SplashScreen extends State<Splash> {
         Provider.of<SettingProvider>(this.context, listen: false);
 
     bool isFirstTime = await settingsProvider.getPrefrenceBool(ISFIRSTTIME);
+    print("this is isfirsttime $isFirstTime");
     if (isFirstTime) {
       Navigator.pushReplacementNamed(context, "/home");
     } else {

@@ -2,47 +2,50 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:blind_date/Helper/AppBtn.dart';
+import 'package:blind_date/Helper/Color.dart';
+import 'package:blind_date/Helper/Constant.dart';
+import 'package:blind_date/Helper/Session.dart';
 import 'package:blind_date/Helper/String.dart';
 import 'package:blind_date/Helper/cropped_container.dart';
 import 'package:blind_date/Helper/custom_fields.dart';
+import 'package:blind_date/Model/user_data_model.dart';
 import 'package:blind_date/Provider/SettingProvider.dart';
 import 'package:blind_date/Provider/UserProvider.dart';
-import 'package:blind_date/Screen/Login.dart';
 import 'package:blind_date/Screen/NewScreens/complete_profile_screen.dart';
 import 'package:blind_date/Screen/SendOtp.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../Helper/AppBtn.dart';
-import '../Helper/Color.dart';
-import '../Helper/Constant.dart';
-import '../Helper/Session.dart';
+
 import 'package:http/http.dart' as http;
 
-class SignUp extends StatefulWidget {
+class UpdateCompleteProfile extends StatefulWidget {
   @override
-  _SignUpPageState createState() => _SignUpPageState();
+  _UpdateCompleteProfilePageState createState() => _UpdateCompleteProfilePageState();
 }
 
-class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
+class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with TickerProviderStateMixin {
+
   bool? _showPassword = false;
   bool visible = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final nameController = TextEditingController();
-  final emailController = TextEditingController();
-  final mobileController = TextEditingController();
-  final ccodeController = TextEditingController();
-  final passwordController = TextEditingController();
-  final referController = TextEditingController();
-  final ageController = TextEditingController();
-  final aboutController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController mobileController = TextEditingController();
+  TextEditingController ccodeController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController referController = TextEditingController();
+  TextEditingController ageController = TextEditingController();
+  TextEditingController aboutController = TextEditingController();
   String? selectedDate;
+  String? adharFront;
+  String? adharBack;
 
   int count = 1;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
@@ -50,7 +53,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       email,
       password,
       mobile,
-  username,
+      username,
       id,
       countrycode,
       city,
@@ -58,7 +61,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       pincode,
       address,
       latitude,
-  image,
+      image,
       longitude,
       referCode,
       friendCode;
@@ -76,6 +79,8 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   AnimationController? buttonController;
   File? aadhaarFront;
   File? aadhaarBack;
+  File? profileImage;
+  String? imageProfile;
 
   selectImage(int index) async {
     PickedFile? pickedFile = await ImagePicker().getImage(
@@ -86,9 +91,13 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         setState(() {
           aadhaarFront = File(pickedFile.path);
         });
-      } else {
+      } else if (index == 2) {
         setState(() {
           aadhaarBack = File(pickedFile.path);
+        });
+      } else {
+        setState(() {
+          profileImage = File(pickedFile.path);
         });
       }
     }
@@ -116,9 +125,13 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                       setState(() {
                         aadhaarFront = File(pickedFile.path);
                       });
-                    } else {
+                    } else if(index == 2){
                       setState(() {
                         aadhaarBack = File(pickedFile.path);
+                      });
+                    }else{
+                      setState(() {
+                        profileImage = File(pickedFile.path);
                       });
                     }
                   }
@@ -165,7 +178,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
 
   getUserDetails() async {
     SettingProvider settingsProvider =
-        Provider.of<SettingProvider>(context, listen: false);
+    Provider.of<SettingProvider>(context, listen: false);
 
     mobile = await settingsProvider.getPrefrence(MOBILE);
     countrycode = await settingsProvider.getPrefrence(COUNTRY_CODE);
@@ -331,7 +344,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
     };
     var request =
-        http.MultipartRequest('POST', Uri.parse(signUpApi.toString()));
+    http.MultipartRequest('POST', Uri.parse(updateSignUpApi.toString()));
     request.fields.addAll({
       MOBILE: mobileController.text.toString(),
       NAME: nameController.text.toString(),
@@ -362,25 +375,92 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       String msg = result['message'];
       print("this is result response $error and $msg");
       if (!error) {
-        var i = result["data"][0];
-
-        id = i[ID];
-        name = i[USERNAME];
-        email = i[EMAIL];
-        mobile = i[MOBILE];
-        //countrycode=i[COUNTRY_CODE];
-        CUR_USERID = id;
-
-        // CUR_USERNAME = name;
-
-        UserProvider userProvider = context.read<UserProvider>();
-        userProvider.setName(name ?? "");
-
-        setPrefrenceBool(isLogin, true);
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> CompleteProfileScreen()));
+        setSnackbar(msg);
+        Navigator.pop(context);
 
       } else {
         setSnackbar(msg);
+      }
+
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
+
+  Date? userData;
+
+  getUserData() async {
+    // CUR_USERID = await getPrefrence(Id);
+    var headers = {
+      'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
+    };
+    var request =
+    http.MultipartRequest('POST', Uri.parse(getUserDetailsApi.toString()));
+    request.fields.addAll({
+      'user_id': CUR_USERID.toString()
+    });
+
+    http.StreamedResponse response = await request.send();
+    request.headers.addAll(headers);
+
+    print("this is user profile request ====>>>> ${request.fields.toString()}");
+
+    if (response.statusCode == 200) {
+      String str = await response.stream.bytesToString();
+      var result = json.decode(str);
+      final fResponse = UserDataModel.fromJson(result);
+
+      bool error = result['error'];
+
+      if (!error) {
+        userData = fResponse.date![0];
+        print("this is user Data ${userData!.username}");
+        if(userData != null) {
+          if(userData!.username != null) {
+            nameController =
+                TextEditingController(text: userData!.username.toString());
+          }
+          if(userData!.age != null) {
+            ageController =
+                TextEditingController(text: userData!.age.toString());
+          }
+          if(userData!.mobile != null) {
+            mobileController =
+                TextEditingController(text: userData!.username.toString());
+          }
+          if(userData!.email != null) {
+            emailController =
+                TextEditingController(text: userData!.email.toString());
+          }
+          if(userData!.describeYourself != null) {
+            aboutController =
+                TextEditingController(text: userData!.describeYourself.toString());
+          }
+          if(userData!.dob != null) {
+            selectedDate = userData!.dob;
+          }
+          if(userData!.aadharFront != null) {
+            adharFront = userData!.aadharFront;
+          }
+          if(userData!.aadharBack != null) {
+            adharBack = userData!.aadharBack;
+          }
+          if(userData!.image != null) {
+            imageProfile = userData!.image;
+          }
+          if (userData!.gender.toString() == "male" || userData!.gender.toString() == "Male") {
+            setState(() {
+              _value3 = 1;
+            });
+          } else {
+            setState(() {
+              _value3 = 2;
+            });
+          }
+        }
+
+      } else {
+        // setSnackbar(msg);
       }
 
     } else {
@@ -393,7 +473,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Align(
         alignment: Alignment.center,
-        child: Text(getTranslated(context, 'SIGN_UP_LBL')!,
+        child: Text(getTranslated(context, 'UPDATE_PROFILE_LBL')!,
             style: Theme.of(context).textTheme.subtitle1!.copyWith(
                 color: colors.primary,
                 fontWeight: FontWeight.bold,
@@ -451,7 +531,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
           // ),
           enabledBorder: UnderlineInputBorder(
             borderSide:
-                BorderSide(color: Theme.of(context).colorScheme.fontColor),
+            BorderSide(color: Theme.of(context).colorScheme.fontColor),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -508,7 +588,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
           // ),
           enabledBorder: UnderlineInputBorder(
             borderSide:
-                BorderSide(color: Theme.of(context).colorScheme.fontColor),
+            BorderSide(color: Theme.of(context).colorScheme.fontColor),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -541,7 +621,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
             decoration: InputDecoration(
               contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               prefixIconConstraints:
-                  BoxConstraints(minWidth: 40, maxHeight: 25),
+              BoxConstraints(minWidth: 40, maxHeight: 25),
               counterText: "",
               hintText: getTranslated(context, 'MOBILEHINT_LBL'),
               prefixIcon: Icon(
@@ -563,7 +643,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
               ),
               enabledBorder: UnderlineInputBorder(
                 borderSide:
-                    BorderSide(color: Theme.of(context).colorScheme.lightWhite),
+                BorderSide(color: Theme.of(context).colorScheme.lightWhite),
               ),
             )));
   }
@@ -609,7 +689,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
           // ),
           enabledBorder: UnderlineInputBorder(
             borderSide:
-                BorderSide(color: Theme.of(context).colorScheme.fontColor),
+            BorderSide(color: Theme.of(context).colorScheme.fontColor),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -669,7 +749,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
             // ),
             enabledBorder: UnderlineInputBorder(
               borderSide:
-                  BorderSide(color: Theme.of(context).colorScheme.fontColor),
+              BorderSide(color: Theme.of(context).colorScheme.fontColor),
               borderRadius: BorderRadius.circular(10.0),
             ),
           ),
@@ -706,7 +786,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
 
   verifyBtn() {
     return AppBtn(
-      title: getTranslated(context, 'SUBMIT_LBL'),
+      title: getTranslated(context, 'UPDATE_PROFILE_LBL'),
       btnAnim: buttonSqueezeanimation,
       btnCntrl: buttonController,
       onBtnSelected: () async {
@@ -747,18 +827,18 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   backBtn() {
     return Platform.isIOS
         ? Container(
-            padding: EdgeInsetsDirectional.only(top: 20.0, start: 10.0),
-            alignment: AlignmentDirectional.topStart,
-            child: Card(
-              elevation: 0,
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(end: 4.0),
-                child: InkWell(
-                  child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
-                  onTap: () => Navigator.of(context).pop(),
-                ),
-              ),
-            ))
+        padding: EdgeInsetsDirectional.only(top: 20.0, start: 10.0),
+        alignment: AlignmentDirectional.topStart,
+        child: Card(
+          elevation: 0,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.only(end: 4.0),
+            child: InkWell(
+              child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+          ),
+        ))
         : Container();
   }
 
@@ -807,6 +887,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
     ));
     super.initState();
     getUserDetails();
+    getUserData();
     buttonController = AnimationController(
         duration: Duration(milliseconds: 2000), vsync: this);
 
@@ -846,7 +927,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
             child: Text(
               "Name",
               style:
-                  TextStyle(color: colors.primary, fontWeight: FontWeight.w600),
+              TextStyle(color: colors.primary, fontWeight: FontWeight.w600),
             ),
           ),
           CustomFields(
@@ -863,7 +944,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
             child: Text(
               "Email",
               style:
-                  TextStyle(color: colors.primary, fontWeight: FontWeight.w600),
+              TextStyle(color: colors.primary, fontWeight: FontWeight.w600),
             ),
           ),
           CustomFields(
@@ -880,7 +961,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
             child: Text(
               "Mobile Number",
               style:
-                  TextStyle(color: colors.primary, fontWeight: FontWeight.w600),
+              TextStyle(color: colors.primary, fontWeight: FontWeight.w600),
             ),
           ),
           CustomFields(
@@ -898,7 +979,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
             child: Text(
               "Gender",
               style:
-                  TextStyle(color: colors.primary, fontWeight: FontWeight.w600),
+              TextStyle(color: colors.primary, fontWeight: FontWeight.w600),
             ),
           ),
           Padding(
@@ -913,7 +994,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                     Radio(
                         value: 1,
                         fillColor: MaterialStateColor.resolveWith(
-                            (states) => colors.primary),
+                                (states) => colors.primary),
                         groupValue: _value3,
                         onChanged: (int? value) {
                           setState(() {
@@ -934,7 +1015,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                     Radio(
                         value: 2,
                         fillColor: MaterialStateColor.resolveWith(
-                            (states) => colors.primary),
+                                (states) => colors.primary),
                         groupValue: _value3,
                         onChanged: (int? value) {
                           setState(() {
@@ -954,7 +1035,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                     Radio(
                         value: 3,
                         fillColor: MaterialStateColor.resolveWith(
-                            (states) => colors.primary),
+                                (states) => colors.primary),
                         groupValue: _value3,
                         onChanged: (int? value) {
                           setState(() {
@@ -980,7 +1061,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                 children: [
                   Padding(
                     padding:
-                        const EdgeInsets.only(left: 25.0, top: 10, bottom: 5),
+                    const EdgeInsets.only(left: 25.0, top: 10, bottom: 5),
                     child: Text(
                       "Age",
                       style: TextStyle(
@@ -1011,7 +1092,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                           // border: InputBorder.none,
                           border: OutlineInputBorder(
                               borderSide:
-                                  BorderSide(color: colors.primary, width: 1),
+                              BorderSide(color: colors.primary, width: 1),
                               borderRadius: BorderRadius.circular(60)),
                           hintText: "Age",
                           hintStyle: TextStyle(fontWeight: FontWeight.w400)),
@@ -1024,7 +1105,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                 children: [
                   Padding(
                     padding:
-                        const EdgeInsets.only(left: 25.0, top: 10, bottom: 5),
+                    const EdgeInsets.only(left: 25.0, top: 10, bottom: 5),
                     child: Text(
                       "DOB",
                       style: TextStyle(
@@ -1044,15 +1125,15 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                                 return Theme(
                                     data: Theme.of(context).copyWith(
                                         colorScheme: ColorScheme.light(
-                                      primary: colors.primary,
-                                    )),
+                                          primary: colors.primary,
+                                        )),
                                     child: child!);
                               });
 
                           if (pickedDate != null) {
                             //pickedDate output format => 2021-03-10 00:00:00.000
                             String formattedDate =
-                                DateFormat('yyyy-MM-dd').format(pickedDate);
+                            DateFormat('yyyy-MM-dd').format(pickedDate);
                             //formatted date output using intl package =>  2021-03-16
                             setState(() {
                               selectedDate =
@@ -1066,22 +1147,22 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                             height: 60,
                             width: MediaQuery.of(context).size.width / 2 - 20,
                             decoration: BoxDecoration(
-                                // color: Colors.white,
+                              // color: Colors.white,
                                 borderRadius: BorderRadius.circular(60),
                                 border: Border.all(color: Colors.grey)),
                             child: selectedDate == null || selectedDate == ''
                                 ? Center(
-                                    child: Text(
-                                    "Select DOB",
-                                    style: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .fontColor),
-                                  ))
+                                child: Text(
+                                  "Select DOB",
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .fontColor),
+                                ))
                                 : Center(
-                                    child: Text(
-                                    "${selectedDate.toString()}",
-                                  )),
+                                child: Text(
+                                  "${selectedDate.toString()}",
+                                )),
                           ),
                         ),
                       )),
@@ -1094,7 +1175,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
             child: Text(
               "Describe Yourself",
               style:
-                  TextStyle(color: colors.primary, fontWeight: FontWeight.w600),
+              TextStyle(color: colors.primary, fontWeight: FontWeight.w600),
             ),
           ),
           CustomFields(
@@ -1114,210 +1195,378 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: PreferredSize(
+          preferredSize: Size(MediaQuery.of(context).size.width, 100),
+          child: AppBar(
+            centerTitle: true,
+            leading: IconButton(icon: Icon(Icons.arrow_back_ios), color: colors.whiteTemp,
+              onPressed: (){
+              Navigator.pop(context);
+              },),
+            title: Image.asset('assets/images/homelogo.png', height: 60,),
+            backgroundColor: colors.primary,
+            iconTheme: IconThemeData(color: colors.whiteTemp),
+            // actions: [
+            //   InkWell(
+            //     onTap: (){
+            //      // Navigator.push(context, MaterialPageRoute(builder: (context)=> WalletHistory()));
+            //     },
+            //     child: Padding(
+            //       padding: const EdgeInsets.only(right: 25.0, top: 4),
+            //       child: Column(
+            //         children: [
+            //           Icon(Icons.wallet, color: colors.whiteTemp, size: 34,),
+            //           Text("Wallet", style: TextStyle(
+            //               color: colors.whiteTemp,
+            //               fontWeight: FontWeight.w600
+            //           ),)
+            //         ],
+            //       ),
+            //     ),
+            //   )],
+          ),
+        ),
         resizeToAvoidBottomInset: true,
         key: _scaffoldKey,
         body: _isNetworkAvail
             ? Form(
-                key: _formkey,
-                child: ScrollConfiguration(
-                  behavior: MyBehavior(),
-                  child: SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 2.5,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _subLogo(),
-                          registerTxt(),
-                          fieldsWidget(),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                top: 15, left: 15.0, right: 15, bottom: 15),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    _selectImage(context, 1);
-                                  },
-                                  child: Container(
-                                      child: Column(
-                                    children: [
-                                      aadhaarFront == null
-                                          ? Container(
-                                              decoration: BoxDecoration(
-                                                border: Border.all(
-                                                    color: Colors.grey),
-                                                borderRadius:
-                                                    BorderRadius.circular(15),
-                                                // image: DecorationImage(
-                                                //     image: FileImage(File(aadhaarImage!.path)),
-                                                //     fit: BoxFit.fill
-                                                //   //AssetImage(Image.file(file)File(tableImage!.path)),
-                                                // )
-                                              ),
-                                              width: MediaQuery.of(context)
-                                                          .size
-                                                          .width /
-                                                      2 -
-                                                  20,
-                                              height: MediaQuery.of(context)
-                                                          .size
-                                                          .width /
-                                                      2 -
-                                                  20,
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  Icon(
-                                                    Icons.upload_file_outlined,
-                                                    size: 32,
-                                                  ),
-                                                  Text('Aadhaar Front')
-                                                ],
-                                              ),
-                                            )
-                                          : Container(
-                                              decoration: BoxDecoration(
-                                                  border: Border.all(
-                                                      color: colors.primary),
-                                                  borderRadius:
-                                                      BorderRadius.circular(15),
-                                                  image: DecorationImage(
-                                                      image: FileImage(File(
-                                                          aadhaarFront!.path)),
-                                                      fit: BoxFit.fill
-                                                      //AssetImage(Image.file(file)File(tableImage!.path)),
-                                                      )),
-                                              width: MediaQuery.of(context)
-                                                          .size
-                                                          .width /
-                                                      2 -
-                                                  20,
-                                              height: MediaQuery.of(context)
-                                                          .size
-                                                          .width /
-                                                      2 -
-                                                  20,
-                                            ),
-                                    ],
-                                  )),
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    _selectImage(context, 2);
-                                  },
-                                  child: Container(
-                                    child: aadhaarBack == null
-                                        ? Container(
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  color: Colors.grey),
-                                              borderRadius:
-                                                  BorderRadius.circular(15),
-                                              // image: DecorationImage(
-                                              //     image: FileImage(File(aadhaarImage!.path)),
-                                              //     fit: BoxFit.fill
-                                              //   //AssetImage(Image.file(file)File(tableImage!.path)),
-                                              // )
-                                            ),
-                                            width: MediaQuery.of(context)
-                                                        .size
-                                                        .width /
-                                                    2 -
-                                                20,
-                                            height: MediaQuery.of(context)
-                                                        .size
-                                                        .width /
-                                                    2 -
-                                                20,
-                                            child: Center(
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  Icon(
-                                                    Icons.upload_file_outlined,
-                                                    size: 32,
-                                                  ),
-                                                  Text('Aadhaar Back')
-                                                ],
-                                              ),
-                                            ),
-                                          )
-                                        : Container(
-                                            decoration: BoxDecoration(
-                                                border: Border.all(
-                                                    color: colors.primary),
-                                                borderRadius:
-                                                    BorderRadius.circular(15),
-                                                image: DecorationImage(
-                                                    image: FileImage(File(
-                                                        aadhaarBack!.path)),
-                                                    fit: BoxFit.fill
-                                                    //AssetImage(Image.file(file)File(tableImage!.path)),
-                                                    )),
-                                            width: MediaQuery.of(context)
-                                                        .size
-                                                        .width /
-                                                    2 -
-                                                20,
-                                            height: MediaQuery.of(context)
-                                                        .size
-                                                        .width /
-                                                    2 -
-                                                20,
-                                          ),
-                                  ),
-                                )
-                              ],
+          key: _formkey,
+          child: ScrollConfiguration(
+            behavior: MyBehavior(),
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 2.5,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 15,),
+                    // _subLogo(),
+                    registerTxt(),
+                    const SizedBox(height: 10,),
+                    InkWell(
+                      onTap: () {
+                        _selectImage(context, 3);
+                      },
+                      child: Container(
+                          child: imageProfile == null || imageProfile.toString() == ''?
+                          profileImage == null
+                              ? Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: colors.primary),
+                              shape: BoxShape.circle,
+                              // borderRadius:
+                              // BorderRadius.circular(15),
+                              // image: DecorationImage(
+                              //     image: FileImage(File(aadhaarImage!.path)),
+                              //     fit: BoxFit.fill
+                              //   //AssetImage(Image.file(file)File(tableImage!.path)),
+                              // )
                             ),
-                          ),
-                          // Padding(
-                          //   padding: const EdgeInsets.only(top: 8.0, bottom: 8),
-                          //   child: ElevatedButton(
-                          //       onPressed: (){
-                          //       },
-                          //       style: ElevatedButton.styleFrom(primary: colors.primary, shape: StadiumBorder()),
-                          //       child: Text("Upload Images", style: TextStyle(
-                          //           color: colors.whiteTemp
-                          //       ),)),
-                          // ),
+                            width: MediaQuery.of(context)
+                                .size
+                                .width /
+                                2 -
+                                20,
+                            height: MediaQuery.of(context)
+                                .size
+                                .width /
+                                2 -
+                                20,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment:
+                                MainAxisAlignment.center,
+                                crossAxisAlignment:
+                                CrossAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.upload_file_outlined,
+                                    size: 32,
+                                  ),
+                                  Text('Profile Image')
+                                ],
+                              ),
+                            ),
+                          )
+                              : Container(
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: colors.primary),
+                                shape: BoxShape.circle,
+                                // borderRadius:
+                                // BorderRadius.circular(15),
+                                image: DecorationImage(
+                                    image: FileImage(File(
+                                        profileImage!.path)),
+                                    fit: BoxFit.fill
+                                  //AssetImage(Image.file(file)File(tableImage!.path)),
+                                )),
+                            width: MediaQuery.of(context)
+                                .size
+                                .width /
+                                2 -
+                                20,
+                            height: MediaQuery.of(context)
+                                .size
+                                .width /
+                                2 -
+                                20,
+                          )
+                              : Container(
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: colors.primary),
+                                shape: BoxShape.circle,
+                                // borderRadius:
+                                // BorderRadius.circular(15),
+                                image: DecorationImage(
+                                    image: NetworkImage(adharBack.toString()),
+                                    fit: BoxFit.fill
+                                  //AssetImage(Image.file(file)File(tableImage!.path)),
+                                )),
+                            width: MediaQuery.of(context)
+                                .size
+                                .width /
+                                2 -
+                                20,
+                            height: MediaQuery.of(context)
+                                .size
+                                .width /
+                                2 -
+                                20,
+                          )
 
-                          verifyBtn(),
-                          loginTxt(),
+                      ),
+                    ),
+                    fieldsWidget(),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          top: 15, left: 15.0, right: 15, bottom: 15),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              _selectImage(context, 1);
+                            },
+                            child: Container(
+                                child: Column(
+                                  children: [
+                                    adharFront == null || adharFront.toString() == ''?
+                                    aadhaarFront == null
+                                        ? Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color: Colors.grey),
+                                        borderRadius:
+                                        BorderRadius.circular(15),
+                                        // image: DecorationImage(
+                                        //     image: FileImage(File(aadhaarImage!.path)),
+                                        //     fit: BoxFit.fill
+                                        //   //AssetImage(Image.file(file)File(tableImage!.path)),
+                                        // )
+                                      ),
+                                      width: MediaQuery.of(context)
+                                          .size
+                                          .width /
+                                          2 -
+                                          20,
+                                      height: MediaQuery.of(context)
+                                          .size
+                                          .width /
+                                          2 -
+                                          20,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.upload_file_outlined,
+                                            size: 32,
+                                          ),
+                                          Text('Aadhaar Front')
+                                        ],
+                                      ),
+                                    )
+                                        : Container(
+                                      decoration: BoxDecoration(
+                                          border: Border.all(
+                                              color: colors.primary),
+                                          borderRadius:
+                                          BorderRadius.circular(15),
+                                          image: DecorationImage(
+                                              image: FileImage(File(
+                                                  aadhaarFront!.path)),
+                                              fit: BoxFit.fill
+                                            //AssetImage(Image.file(file)File(tableImage!.path)),
+                                          )),
+                                      width: MediaQuery.of(context)
+                                          .size
+                                          .width /
+                                          2 -
+                                          20,
+                                      height: MediaQuery.of(context)
+                                          .size
+                                          .width /
+                                          2 -
+                                          20,
+                                    )
+                                 :   Container(
+                                      decoration: BoxDecoration(
+                                          border: Border.all(
+                                              color: colors.primary),
+                                          borderRadius:
+                                          BorderRadius.circular(15),
+                                          image: DecorationImage(
+                                              image: NetworkImage(adharBack.toString()),
+                                              fit: BoxFit.fill
+                                            //AssetImage(Image.file(file)File(tableImage!.path)),
+                                          )),
+                                      width: MediaQuery.of(context)
+                                          .size
+                                          .width /
+                                          2 -
+                                          20,
+                                      height: MediaQuery.of(context)
+                                          .size
+                                          .width /
+                                          2 -
+                                          20,
+                                    )
+
+                                  ],
+                                )),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              _selectImage(context, 2);
+                            },
+                            child: Container(
+                              child: adharBack == null || adharBack.toString() == ''?
+                              aadhaarBack == null
+                                  ? Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.grey),
+                                  borderRadius:
+                                  BorderRadius.circular(15),
+                                  // image: DecorationImage(
+                                  //     image: FileImage(File(aadhaarImage!.path)),
+                                  //     fit: BoxFit.fill
+                                  //   //AssetImage(Image.file(file)File(tableImage!.path)),
+                                  // )
+                                ),
+                                width: MediaQuery.of(context)
+                                    .size
+                                    .width /
+                                    2 -
+                                    20,
+                                height: MediaQuery.of(context)
+                                    .size
+                                    .width /
+                                    2 -
+                                    20,
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.upload_file_outlined,
+                                        size: 32,
+                                      ),
+                                      Text('Aadhaar Back')
+                                    ],
+                                  ),
+                                ),
+                              )
+                                  : Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: colors.primary),
+                                    borderRadius:
+                                    BorderRadius.circular(15),
+                                    image: DecorationImage(
+                                        image: FileImage(File(
+                                            aadhaarBack!.path)),
+                                        fit: BoxFit.fill
+                                      //AssetImage(Image.file(file)File(tableImage!.path)),
+                                    )),
+                                width: MediaQuery.of(context)
+                                    .size
+                                    .width /
+                                    2 -
+                                    20,
+                                height: MediaQuery.of(context)
+                                    .size
+                                    .width /
+                                    2 -
+                                    20,
+                              )
+                              : Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: colors.primary),
+                                    borderRadius:
+                                    BorderRadius.circular(15),
+                                    image: DecorationImage(
+                                        image: NetworkImage(adharBack.toString()),
+                                        fit: BoxFit.fill
+                                      //AssetImage(Image.file(file)File(tableImage!.path)),
+                                    )),
+                                width: MediaQuery.of(context)
+                                    .size
+                                    .width /
+                                    2 -
+                                    20,
+                                height: MediaQuery.of(context)
+                                    .size
+                                    .width /
+                                    2 -
+                                    20,
+                              )
+
+                            ),
+                          )
                         ],
                       ),
                     ),
-                  ),
+
+                    verifyBtn(),
+                    // loginTxt(),
+                  ],
                 ),
-              )
-            // Stack(
-            //         children: [
-            //           backBtn(),
-            //           Container(
-            //             width: double.infinity,
-            //             height: double.infinity,
-            //             decoration: back(),
-            //           ),
-            //           Image.asset(
-            //             'assets/images/doodle.png',
-            //             fit: BoxFit.fill,
-            //             width: double.infinity,
-            //             height: double.infinity,
-            //           ),
-            //           //getBgImage(),
-            //           getLoginContainer(),
-            //           getLogo(),
-            //         ],
-            //       )
+              ),
+            ),
+          ),
+        )
+        // Stack(
+        //         children: [
+        //           backBtn(),
+        //           Container(
+        //             width: double.infinity,
+        //             height: double.infinity,
+        //             decoration: back(),
+        //           ),
+        //           Image.asset(
+        //             'assets/images/doodle.png',
+        //             fit: BoxFit.fill,
+        //             width: double.infinity,
+        //             height: double.infinity,
+        //           ),
+        //           //getBgImage(),
+        //           getLoginContainer(),
+        //           getLogo(),
+        //         ],
+        //       )
             : noInternet(context));
   }
 
@@ -1330,8 +1579,8 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       };
 
       Response response =
-          await post(validateReferalApi, body: data, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(validateReferalApi, body: data, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -1422,7 +1671,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                         children: [
                           Container(
                             padding:
-                                EdgeInsets.only(left: 15, top: 8, bottom: 4),
+                            EdgeInsets.only(left: 15, top: 8, bottom: 4),
                             height: 50,
                             width: MediaQuery.of(context).size.width / 2 - 20,
                             // decoration: BoxDecoration(
@@ -1434,7 +1683,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                             child: TextFormField(
                               style: TextStyle(
                                   color:
-                                      Theme.of(context).colorScheme.fontColor),
+                                  Theme.of(context).colorScheme.fontColor),
                               keyboardType: TextInputType.number,
                               // maxLength: mxLength,
                               controller: ageController,
@@ -1452,12 +1701,12 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                                       borderRadius: BorderRadius.circular(60)),
                                   hintText: "Age",
                                   hintStyle:
-                                      TextStyle(fontWeight: FontWeight.w400)),
+                                  TextStyle(fontWeight: FontWeight.w400)),
                             ),
                           ),
                           Container(
                             padding:
-                                EdgeInsets.only(left: 15, top: 8, bottom: 4),
+                            EdgeInsets.only(left: 15, top: 8, bottom: 4),
                             height: 50,
                             width: MediaQuery.of(context).size.width / 2 - 20,
                             // decoration: BoxDecoration(
@@ -1469,7 +1718,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                             child: TextFormField(
                               style: TextStyle(
                                   color:
-                                      Theme.of(context).colorScheme.fontColor),
+                                  Theme.of(context).colorScheme.fontColor),
                               keyboardType: TextInputType.number,
                               // maxLength: mxLength,
                               controller: ageController,
@@ -1487,7 +1736,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                                       borderRadius: BorderRadius.circular(60)),
                                   hintText: "Age",
                                   hintStyle:
-                                      TextStyle(fontWeight: FontWeight.w400)),
+                                  TextStyle(fontWeight: FontWeight.w400)),
                             ),
                           ),
                         ],

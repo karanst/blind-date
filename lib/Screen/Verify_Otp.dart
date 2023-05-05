@@ -63,6 +63,7 @@ class _MobileOTPState extends State<VerifyOtp> with TickerProviderStateMixin {
       latitude,
       longitude,
       image,
+  gender,
   leadsCount;
 
   @override
@@ -276,8 +277,6 @@ class _MobileOTPState extends State<VerifyOtp> with TickerProviderStateMixin {
       print("this is send otp data $sendOtpApi and $getdata");
       await buttonController!.reverse();
 
-      SettingProvider settingsProvider =
-      Provider.of<SettingProvider>(context, listen: false);
 
       // if (widget.title == getTranslated(context, 'SEND_OTP_TITLE')) {
       if (!error!) {
@@ -294,6 +293,7 @@ class _MobileOTPState extends State<VerifyOtp> with TickerProviderStateMixin {
         latitude = i[LATITUDE];
         longitude = i[LONGITUDE];
         image = i[IMAGE];
+        gender=i['gender'];
 
         CUR_USERID = id;
         // CUR_USERNAME = username;
@@ -303,13 +303,16 @@ class _MobileOTPState extends State<VerifyOtp> with TickerProviderStateMixin {
         userProvider.setName(username ?? "");
         userProvider.setEmail(email ?? "");
         userProvider.setProfilePic(image ?? "");
+        userProvider.setGender(gender ?? "");
 
         SettingProvider settingProvider =
         Provider.of<SettingProvider>(context, listen: false);
 
-        settingProvider.saveUserDetail(id!, username, email, mobile, city, area,
-            address, pincode, latitude, longitude, image, context);
-        settingsProvider.getPrefrenceBool(ISFIRSTTIME);
+        settingProvider.setPrefrenceBool(ISFIRSTTIME, true);
+
+        settingProvider.saveUserDetail(id!, username, email, mobile,
+            gender, city, area, address, pincode, latitude, longitude, image, context);
+
         setPrefrenceBool(isLogin, true);
         Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
 

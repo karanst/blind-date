@@ -55,9 +55,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     List<Placemark> placemarks =
     await placemarkFromCoordinates(position.latitude, position.longitude);
     Placemark placemark = placemarks[0];
-    String address =
+    currentAddress =
         '${placemark.street}, ${placemark.subLocality},${placemark.locality}, ${placemark.country}';
-    print(address);
+    // print(currentAddress);
   }
 
   ///MULTI IMAGE PICKER
@@ -755,289 +755,70 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 }
 
 
-class MultiSelect extends StatefulWidget {
-  MultiSelect({Key? key}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => _MultiSelectState();
-
-}
-
-
-class _MultiSelectState extends State<MultiSelect> {
-  List _selectedItems = [];
-  // this variable holds the selected items
-
-  // List<CityData> cityList = [];
-  // List<Categories> eventCat = [];
-  List languages = ['Hindi', 'English', 'Marathi', 'Gujarati'];
-
-  void _itemChange( itemValue, bool isSelected) {
-    setState(() {
-      if (isSelected) {
-        _selectedItems.add(itemValue);
-      } else {
-        _selectedItems.remove(itemValue);
-      }
-    });
-    print("this is selected values ${_selectedItems.toString()}");
-  }
-
-  void _cancel() {
-    Navigator.pop(context);
-  }
-
-
-  void _submit() {
-    List selectedItem = _selectedItems.map((item) => item.id).toList();
-
-    Navigator.pop(context);
-  }
-  // _getEventCategory() async {
-  //   var uri = Uri.parse('${Apipath.getEventCatUrl}');
-  //   var request = new http.MultipartRequest("POST", uri);
-  //   Map<String, String> headers = {
-  //     "Accept": "application/json",
-  //   };
-  //   // print(baseUrl.toString());
-  //
-  //   request.headers.addAll(headers);
-  //   request.fields['type_id'] = "${widget.type.toString()}";
-  //   var response = await request.send();
-  //   print(response.statusCode);
-  //   String responseData = await response.stream.transform(utf8.decoder).join();
-  //   var userData = json.decode(responseData);
-  //
-  //   if (mounted) {
-  //     setState(() {
-  //       // collectionModal = AllCateModel.fromJson(userData);
-  //       eventCat = EventCategoryModel.fromJson(userData).data!;
-  //       // print(
-  //       //     "ooooo ${collectionModal!.status} and ${collectionModal!.categories!.length} and ${userID}");
-  //     });
-  //   }
-  //   print(responseData);
-  // }
-  bool isChecked = false;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    // _getEventCategory();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: ListBody(
-        children: languages
-            .map((item) =>
-        // InkWell(
-        //   onTap: (){
-        //     setState(() {
-        //       if (isChecked) {
-        //         setState(() {
-        //           _selectedItems.add(item);
-        //         });
-        //         print("length of item list ${_selectedItems.length}");
-        //         for (var i = 0; i < _selectedItems.length; i++) {
-        //           print("ok now final  ${_selectedItems[i]
-        //               .id} and  ${_selectedItems[i].cName}");
-        //         }
-        //       }
-        //       else {
-        //         setState(() {
-        //           _selectedItems.remove(item);
-        //         });
-        //         print("ok now data ${_selectedItems}");
-        //       }
-        //     });
-        //
-        //   },
-        //   child: Row(
-        //     children: [
-        //       Container(
-        //         height: 40,
-        //         width: 40,
-        //         decoration: BoxDecoration(
-        //           color: AppColor().colorBg1(),
-        //           border: Border.all(
-        //             color: isChecked ? colors.primary : AppColor().colorTextSecondary()
-        //           ),
-        //           borderRadius: BorderRadius.circular(5)
-        //         ),
-        //         child: Icon(
-        //           Icons.check,
-        //         ),
-        //       ),
-        //       Text(item.cName!)
-        //     ],
-        //   ),
-        // )
-        CheckboxListTile(
-          activeColor: colors.primary,
-          value: _selectedItems.contains(item),
-          title: Text(item),
-          controlAffinity: ListTileControlAffinity.leading,
-          onChanged: (isChecked) => _itemChange(item, isChecked!),
-          // onChanged: (isChecked) {
-          //   setState(() {
-          //     if (!isChecked! && _selectedItems.contains(item.id)) {
-          //       setState(() {
-          //         _selectedItems.remove(item);
-          //       });
-          //       print("ok now data ${_selectedItems}");
-          //     }
-          //     else {
-          //       setState(() {
-          //         _selectedItems.add(item);
-          //       });
-          //       print("length of item list ${_selectedItems.length}");
-          //       for (var i = 0; i < _selectedItems.length; i++) {
-          //         print("ok now final  ${_selectedItems[i]
-          //             .id} and  ${_selectedItems[i].cName}");
-          //       }
-          //     }
-          //   });
-          // },
-        )
-        ).toList(),
-      ),
-    );
-    //   StatefulBuilder(
-    //     builder: (context, setState)
-    //     {
-    //       return
-    //         AlertDialog(
-    //           title: const Text('Select Multiple Categories'),
-    //           content: SingleChildScrollView(
-    //             child: ListBody(
-    //               children: language
-    //                   .map((item) =>
-    //               // InkWell(
-    //               //   onTap: (){
-    //               //     setState(() {
-    //               //       if (isChecked) {
-    //               //         setState(() {
-    //               //           _selectedItems.add(item);
-    //               //         });
-    //               //         print("length of item list ${_selectedItems.length}");
-    //               //         for (var i = 0; i < _selectedItems.length; i++) {
-    //               //           print("ok now final  ${_selectedItems[i]
-    //               //               .id} and  ${_selectedItems[i].cName}");
-    //               //         }
-    //               //       }
-    //               //       else {
-    //               //         setState(() {
-    //               //           _selectedItems.remove(item);
-    //               //         });
-    //               //         print("ok now data ${_selectedItems}");
-    //               //       }
-    //               //     });
-    //               //
-    //               //   },
-    //               //   child: Row(
-    //               //     children: [
-    //               //       Container(
-    //               //         height: 40,
-    //               //         width: 40,
-    //               //         decoration: BoxDecoration(
-    //               //           color: AppColor().colorBg1(),
-    //               //           border: Border.all(
-    //               //             color: isChecked ? colors.primary : AppColor().colorTextSecondary()
-    //               //           ),
-    //               //           borderRadius: BorderRadius.circular(5)
-    //               //         ),
-    //               //         child: Icon(
-    //               //           Icons.check,
-    //               //         ),
-    //               //       ),
-    //               //       Text(item.cName!)
-    //               //     ],
-    //               //   ),
-    //               // )
-    //               CheckboxListTile(
-    //                 activeColor: colors.primary,
-    //                 value: _selectedItems.contains(item),
-    //                 title: Text(item),
-    //                 controlAffinity: ListTileControlAffinity.leading,
-    //                 onChanged: (isChecked) => _itemChange(item, isChecked!),
-    //                 // onChanged: (isChecked) {
-    //                 //   setState(() {
-    //                 //     if (!isChecked! && _selectedItems.contains(item.id)) {
-    //                 //       setState(() {
-    //                 //         _selectedItems.remove(item);
-    //                 //       });
-    //                 //       print("ok now data ${_selectedItems}");
-    //                 //     }
-    //                 //     else {
-    //                 //       setState(() {
-    //                 //         _selectedItems.add(item);
-    //                 //       });
-    //                 //       print("length of item list ${_selectedItems.length}");
-    //                 //       for (var i = 0; i < _selectedItems.length; i++) {
-    //                 //         print("ok now final  ${_selectedItems[i]
-    //                 //             .id} and  ${_selectedItems[i].cName}");
-    //                 //       }
-    //                 //     }
-    //                 //   });
-    //                 // },
-    //               )
-    //               ).toList(),
-    //             ),
-    //           ),
-    //           // FutureBuilder(
-    //           //   future: getCities(),
-    //           //   builder: (context, snapshot){
-    //           //     if(snapshot.hasData) {
-    //           //      return SingleChildScrollView(
-    //           //         child: ListBody(
-    //           //           children: cityList
-    //           //               .map((item) =>
-    //           //               CheckboxListTile(
-    //           //                 value: _selectedItems.contains(item),
-    //           //                 title: Text(item.name!),
-    //           //                 controlAffinity: ListTileControlAffinity.leading,
-    //           //                 onChanged: (isChecked) => _itemChange(item, isChecked!),
-    //           //               ))
-    //           //               .toList(),
-    //           //         ),
-    //           //       );
-    //           //     }
-    //           //     return Container(
-    //           //       height: 30,
-    //           //         width: 30,
-    //           //         child: CircularProgressIndicator(
-    //           //           color: colors.primary,
-    //           //         ));
-    //           //   }
-    //           // ),
-    //           actions: [
-    //             TextButton(
-    //               child: Text('Cancel',
-    //                 style: TextStyle(color: colors.primary),),
-    //               onPressed: _cancel,
-    //             ),
-    //             ElevatedButton(
-    //               style: ElevatedButton.styleFrom(
-    //                   primary: colors.primary
-    //               ),
-    //               child: Text('Submit'),
-    //               onPressed: () {
-    //                 // _submit();
-    //                 Navigator.pop(context, _selectedItems);
-    //               }
-    //               //     (){
-    //               //   for(var i = 0 ; i< _selectedItems.length; i++){
-    //               //     print(_selectedItems[i].id);
-    //               //   }
-    //               // }
-    //               ,
-    //             ),
-    //           ],
-    //         );
-    //     }
-    // );
-  }
-}
+// class MultiSelect extends StatefulWidget {
+//   MultiSelect({Key? key}) : super(key: key);
+//
+//   @override
+//   State<StatefulWidget> createState() => _MultiSelectState();
+//
+// }
+//
+//
+// class _MultiSelectState extends State<MultiSelect> {
+//   List _selectedItems = [];
+//   // this variable holds the selected items
+//
+//   // List<CityData> cityList = [];
+//   // List<Categories> eventCat = [];
+//   List languages = ['Hindi', 'English', 'Marathi', 'Gujarati'];
+//
+//   void _itemChange( itemValue, bool isSelected) {
+//     setState(() {
+//       if (isSelected) {
+//         _selectedItems.add(itemValue);
+//       } else {
+//         _selectedItems.remove(itemValue);
+//       }
+//     });
+//     print("this is selected values ${_selectedItems.toString()}");
+//   }
+//
+//   void _cancel() {
+//     Navigator.pop(context);
+//   }
+//
+//
+//   void _submit() {
+//     List selectedItem = _selectedItems.map((item) => item.id).toList();
+//
+//     Navigator.pop(context);
+//   }
+//
+//   bool isChecked = false;
+//
+//   @override
+//   void initState() {
+//     // TODO: implement initState
+//     super.initState();
+//     // _getEventCategory();
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return SingleChildScrollView(
+//       child: ListBody(
+//         children: languages
+//             .map((item) =>
+//         CheckboxListTile(
+//           activeColor: colors.primary,
+//           value: _selectedItems.contains(item),
+//           title: Text(item),
+//           controlAffinity: ListTileControlAffinity.leading,
+//           onChanged: (isChecked) => _itemChange(item, isChecked!),
+//         )
+//         ).toList(),
+//       ),
+//     );
+//
+//   }
+// }

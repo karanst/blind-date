@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:blind_date/Screen/My_Wallet.dart';
 import 'package:blind_date/Screen/SendOtp.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:blind_date/Provider/UserProvider.dart';
@@ -55,13 +56,31 @@ back() {
 
 getAppBar(String title, BuildContext context) {
   return PreferredSize(
-    preferredSize: Size(MediaQuery.of(context).size.width, 100),
+    preferredSize: Size(MediaQuery.of(context).size.width, 80),
     child: AppBar(
       centerTitle: true,
       leading: Icon(Icons.arrow_back_ios, color: colors.primary,),
       title: Image.asset('assets/images/homelogo.png', height: 60,),
       backgroundColor: colors.primary,
       iconTheme: IconThemeData(color: colors.whiteTemp),
+      actions: [
+        InkWell(
+          onTap: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context)=> MyWallet()));
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(right: 25.0, top: 4),
+            child: Column(
+              children: [
+                Icon(Icons.wallet, color: colors.whiteTemp, size: 34,),
+                Text("Wallet", style: TextStyle(
+                    color: colors.whiteTemp,
+                    fontWeight: FontWeight.w600
+                ),)
+              ],
+            ),
+          ),
+        )],
       // actions: [
       //   InkWell(
       //     onTap: (){

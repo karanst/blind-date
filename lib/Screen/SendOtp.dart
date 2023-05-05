@@ -593,7 +593,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
           InkWell(
               onTap: () async {
                 await buttonController!.reverse();
-                Navigator.push(context, MaterialPageRoute(builder: (context) => CompleteProfileScreen()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => SignUp()));
                 // sendOtpUser();
                 // checkNetworkOtp();
               },

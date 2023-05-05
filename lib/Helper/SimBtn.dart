@@ -27,7 +27,7 @@ class SimBtn extends StatelessWidget {
           decoration: new BoxDecoration(
 
             color: colors.primary,
-            borderRadius: new BorderRadius.all(const Radius.circular(5.0)),
+            borderRadius: new BorderRadius.all(const Radius.circular(40.0)),
           ),
           child: Text(title!,
               textAlign: TextAlign.center,

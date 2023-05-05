@@ -7,8 +7,11 @@ import 'package:blind_date/Provider/CategoryProvider.dart';
 import 'package:blind_date/Provider/HomeProvider.dart';
 import 'package:blind_date/Screen/Dashboard.dart';
 import 'package:blind_date/Screen/HomePage.dart';
+import 'package:blind_date/Screen/NewScreens/complete_profile_screen.dart';
+import 'package:blind_date/Screen/NewScreens/my_bookings.dart';
 import 'package:blind_date/Screen/my_restaurants.dart';
 import 'package:blind_date/Screen/my_leads_accounts.dart';
+import 'package:blind_date/Screen/profile/update_profile.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:blind_date/Helper/ApiBaseHelper.dart';
 import 'package:blind_date/Helper/Color.dart';
@@ -233,7 +236,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                   selector: (_, provider) => provider.profilePic,
                   builder: (context, profileImage, child) {
                     return getUserImage(
-                        profileImage, openChangeUserDetailsBottomSheet);
+                        profileImage, );
                   }),
               /*         Container(
                 margin: EdgeInsetsDirectional.only(end: 20),
@@ -528,20 +531,20 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
       shrinkWrap: true,
       physics: BouncingScrollPhysics(),
       children: <Widget>[
-        // CUR_USERID == "" || CUR_USERID == null
-        //     ? Container()
-        //     : _getDrawerItem(getTranslated(context, 'MY_ORDERS_LBL')!,
-        //         'assets/images/pro_myorder.svg'),
+        CUR_USERID == "" || CUR_USERID == null
+            ? Container()
+            : _getDrawerItem("Change Choices",
+                'assets/images/desel_fav.svg'),
         // CUR_USERID == "" || CUR_USERID == null ? Container() : _getDivider(),
         // CUR_USERID == "" || CUR_USERID == null
         //     ? Container()
         //     : _getDrawerItem(getTranslated(context, 'MANAGE_ADD_LBL')!,
         //         'assets/images/pro_address.svg'),
         //CUR_USERID == "" || CUR_USERID == null ? Container() : _getDivider(),
-        CUR_USERID == "" || CUR_USERID == null
-            ? Container()
-            : _getDrawerItem(getTranslated(context, 'MYWALLET')!,
-                'assets/images/pro_wh.svg'),
+        // CUR_USERID == "" || CUR_USERID == null
+        //     ? Container()
+        //     : _getDrawerItem(getTranslated(context, 'MYWALLET')!,
+        //         'assets/images/pro_wh.svg'),
         // CUR_USERID == "" || CUR_USERID == null
         //     ? Container()
         //     : _getDrawerItem(getTranslated(context, 'MYEARNINGS')!,
@@ -560,7 +563,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
             'assets/images/pro_theme.svg'),
         CUR_USERID == "" || CUR_USERID == null
             ? Container()
-            : _getDrawerItem("Request Training",
+            : _getDrawerItem("My Bookings",
             'assets/images/pro_myorder.svg'),
         // _getDivider(),
         // _getDrawerItem(getTranslated(context, 'CHANGE_LANGUAGE_LBL')!,
@@ -651,7 +654,14 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                 MaterialPageRoute(
                   builder: (context) => TransactionHistory(),
                 ));
-          } else if (title == getTranslated(context, 'MY_COMMISSION')) {
+          } else if (title == "Change Choices") {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CompleteProfileScreen(),
+                ));
+          }
+          else if (title == getTranslated(context, 'MY_COMMISSION')) {
             Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -757,8 +767,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           else if (title == getTranslated(context, 'CHANGE_THEME_LBL')) {
             openChangeThemeBottomSheet();
           }
-          else if (title == "Request Training") {
-            openRequestTrainingBottomSheet();
+          else if (title == "My Bookings") {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => MyBookings()));
           } else if (title == getTranslated(context, 'LOGOUT')) {
             logOutDailog();
           } else if (title == getTranslated(context, 'CHANGE_PASS_LBL')) {
@@ -936,8 +946,9 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                       Provider.of<SettingProvider>(context, listen: false);
                   settingProvider.clearUserSession(context);
                   //favList.clear();
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/home', (Route<dynamic> route) => false);
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> Login()));
+                  // Navigator.of(context).pushNamedAndRemoveUntil(
+                  //     '/home', (Route<dynamic> route) => false);
                 })
           ],
         );
@@ -982,14 +993,15 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     );
   }
 
-  Widget getUserImage(String profileImage, VoidCallback? onBtnSelected) {
+  Widget getUserImage(String profileImage) {
     return Stack(
       children: <Widget>[
         GestureDetector(
           onTap: () {
-            if (mounted) {
-              onBtnSelected!();
-            }
+            Navigator.push(context, MaterialPageRoute(builder: (context)=> UpdateCompleteProfile()));
+            // if (mounted) {
+            //   onBtnSelected!();
+            // }
           },
           child: Container(
             margin: EdgeInsetsDirectional.only(end: 20),
@@ -1057,9 +1069,9 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                     size: 10,
                   ),
                   onTap: () {
-                    if (mounted) {
-                      onBtnSelected!();
-                    }
+                    // if (mounted) {
+                    //   onBtnSelected!();
+                    // }
                   },
                 ),
                 decoration: BoxDecoration(
@@ -1093,14 +1105,14 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                   children: [
                     bottomSheetHandle(),
                     bottomsheetLabel("EDIT_PROFILE_LBL"),
-                    Selector<UserProvider, String>(
-                        selector: (_, provider) => provider.profilePic,
-                        builder: (context, profileImage, child) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10.0),
-                            child: getUserImage(profileImage, _imgFromGallery),
-                          );
-                        }),
+                    // Selector<UserProvider, String>(
+                    //     selector: (_, provider) => provider.profilePic,
+                    //     builder: (context, profileImage, child) {
+                    //       return Padding(
+                    //         padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    //         child: getUserImage(profileImage, _imgFromGallery),
+                    //       );
+                    //     }),
                     Selector<UserProvider, String>(
                         selector: (_, provider) => provider.curUserName,
                         builder: (context, userName, child) {
@@ -1144,7 +1156,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                  Padding(
                      padding: EdgeInsets.all(15),
                      child: Text(
-                       "Request Training", style: TextStyle(color: Theme
+                       "Change Choices", style: TextStyle(color: Theme
                          .of(context)
                          .colorScheme
                          .fontColor,

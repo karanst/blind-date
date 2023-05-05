@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:blind_date/Helper/Constant.dart';
 import 'package:blind_date/Helper/Stripe_Service.dart';
 import 'package:blind_date/Helper/user_custom_radio.dart';
+import 'package:blind_date/Model/my_bookings_model.dart';
 import 'package:blind_date/Model/restaurant_model.dart';
 import 'package:blind_date/Provider/SettingProvider.dart';
 import 'package:blind_date/Screen/NewScreens/table_details.dart';
@@ -19,19 +20,19 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import '../../Model/Transaction_Model.dart';
 
-class RestaurantDetails extends StatefulWidget {
+class MyBookings extends StatefulWidget {
   final Restaurants? data;
   final String? id;
-  const RestaurantDetails({Key? key, this.data, this.id}) : super(key: key);
+  const MyBookings({Key? key, this.data, this.id}) : super(key: key);
 
   @override
-  State<RestaurantDetails> createState() => _RestaurantDetailsState();
+  State<MyBookings> createState() => _MyBookingsState();
 }
 
 bool _isLoading = true;
 
-class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProviderStateMixin {
-  List<Tables> tablesList = [];
+class _MyBookingsState extends State<MyBookings> with TickerProviderStateMixin {
+  List<Bookings> bookingList = [];
 
   bool _isNetworkAvail = true;
   Animation? buttonSqueezeanimation;
@@ -48,6 +49,7 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
     'assets/images/stripe.svg',
     'assets/images/paytm.svg',
   ];
+
   List<RadioModel> payModel = [];
   bool? paypal, razorpay, paumoney, paystack, flutterwave, stripe, paytm;
   String? razorpayId,
@@ -72,15 +74,14 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
   bool isLoadingmore = true, _isLoading = true, payTesting = true;
   final paystackPlugin = PaystackPlugin();
 
-  getRestaurantTable() async {
+  getMyBookings() async {
     var headers = {
       'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
     };
     var request =
-    http.MultipartRequest('POST', Uri.parse(getRestroListApi.toString()));
+    http.MultipartRequest('POST', Uri.parse(bookingListApi.toString()));
     request.fields.addAll({
-      'user_type': 'female',
-      'id': widget.id.toString()
+      'user_id' : CUR_USERID.toString()
     });
 
     print("this is restro request ${request.fields.toString()}");
@@ -90,12 +91,12 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
     if (response.statusCode == 200) {
       String str = await response.stream.bytesToString();
       var result = json.decode(str);
-      var finalResponse = RestaurantModel.fromJson(result);
+      var finalResponse = MyBookingsModel.fromJson(result);
       setState(() {
-        tablesList = finalResponse.data![0].tables!;
+        bookingList = finalResponse.data!;
         _isLoading = false;
       });
-      print("this is referral data ${tablesList.length}");
+      print("this is referral data ${bookingList.length}");
     } else {
       print(response.reasonPhrase);
     }
@@ -303,7 +304,7 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
   //       Fluttertoast.showToast(msg: '${result['message']}');
   //       getRestroTables();
   //     }
-  //     print("this is referral data ${tablesList.length}");
+  //     print("this is referral data ${bookingList.length}");
   //   }
   //   else {
   //     print(response.reasonPhrase);
@@ -357,7 +358,7 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
     await Future.delayed(Duration(seconds: 3)).then(
           (onvalue) {
         completer.complete();
-        getRestaurantTable();
+        getMyBookings();
         setState(
               () {
             _isLoading = true;
@@ -380,17 +381,25 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
             padding: const EdgeInsets.all(12.0),
             child: Column(
               children: [
-                Text(widget.data!.storeName.toString(), style: TextStyle(
+                Text("My Bookings", style: TextStyle(
                     color: colors.primary, fontSize: 20, fontWeight: FontWeight.w600
                 ),),
                 const SizedBox(height: 10,),
+                bookingList.isNotEmpty ?
                 ListView.builder(
                     physics: NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
-                    itemCount: tablesList.length,
+                    itemCount: bookingList.length,
                     itemBuilder: (context, index) {
-                      return restroCard(index);
-                    }),
+                      return bookingCard(index);
+                        //restroCard(index);
+                    })
+                :  Container(
+                  height: MediaQuery.of(context).size.width,
+                  child: Center(
+                    child: Text(" No bookings found!"),
+                  ),
+                ),
               ],
             ),
           ),
@@ -403,215 +412,293 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
   Widget restroCard(int index) {
     return InkWell(
       onTap: (){
-         Navigator.push(context, MaterialPageRoute(builder: (context) => TableDetails(data: tablesList[index], restroData: widget.data,)));
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => TableDetails(data: bookingList[index], restroData: widget.data,)));
       },
       child: Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: tablesList[index].image == null ||
-                        tablesList[index].image ==
-                            'https://developmentalphawizz.com/blind_date/'
-                        ? Container(
-                      padding: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: colors.primary, width: 2)),
-                      child: Container(
-                        height: 80,
-                        width: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                              image:
-                              AssetImage('assets/images/placeholder.png'),
-                              fit: BoxFit.fitHeight),
-                          // borderRadius: BorderRadius.circular(15)
-                        ),
-                        // child: Image.network(tablesList[index].image.toString(), width: 100, height: 100,)
-                      ),
-                    )
-                        : Container(
-                      padding: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: colors.primary, width: 2)),
-                      child: Container(
-                        height: 80,
-                        width: 80,
-                        decoration: BoxDecoration(
-                          // border: Border.all(color: primary, width: 1),
-                          shape: BoxShape.circle,
-                          // borderRadius: BorderRadius.circular(12),
-                          image: DecorationImage(
-                              image: NetworkImage(
-                                  tablesList[index].image.toString()),
-                              fit: BoxFit.fill),
-                          // borderRadius: BorderRadius.circular(15)
-                        ),
-                        // child: Image.network(tablesList[index].image.toString(), width: 100, height: 100,)
-                      ),
-                    )),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      width: MediaQuery.of(context).size.width/2,
-                      child: Text(tablesList[index].name.toString(),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,  color: colors.blackTemp)),
-                    ),
-                    const SizedBox(height: 5,),
-                    Container(
-                      width: MediaQuery.of(context).size.width/2,
-                      child: Text('Benefits : ${tablesList[index].benifits.toString()}',
+                  Row(
+                    children: [
+                      Text('Date : ',
                           overflow: TextOverflow.ellipsis,
                           maxLines: 2,
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
-                    ),
-                    const SizedBox(height: 5,),
-                    Text('Table Price : ₹ ${tablesList[index].price.toString()}', style: TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 14, color: colors.blackTemp
-                    ),),
+                      Text('${bookingList[index].bookingDate.toString()}',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+                    ],
+                  ),
+                    Container(
+                      height: 20,
+                        child: VerticalDivider(color: colors.primary, thickness: 1,)),
 
+                    Row(
+                      children: [
+                        Text('Time : ',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        Text('${bookingList[index].bookingTime.toString()}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+                      ],
+                    ),
+
+                ],),
+                Divider(color: colors.primary, thickness: 1,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Booking ID : ',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                    Text('${bookingList[index].id.toString()}',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
                   ],
                 ),
-                // Padding(
-                //   padding: const EdgeInsets.only(top: 60.0, right: 5),
-                //   child: Container(
-                //     padding: EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
-                //     decoration: BoxDecoration(
-                //         borderRadius: BorderRadius.circular(40),
-                //         color: colors.primary
-                //     ),
-                //     child: Center(
-                //       child: Text('₹ ${tablesList[index].price.toString()}', style: TextStyle(
-                //           fontWeight: FontWeight.w600, fontSize: 14, color: colors.whiteTemp
-                //       ),),
-                //     ),
-                //   ),
-                // )
+                const SizedBox(height: 5,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Restaurant : ',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                    Text('${bookingList[index].storeName.toString()}',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+                  ],
+                ),
+                const SizedBox(height: 5,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Table Type : ',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                    Text('${bookingList[index].tableName.toString()}',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+                  ],
+                ),
+                const SizedBox(height: 5,),
+                Divider(color: colors.primary, thickness: 1,),
+                Text('Approx Amount : ₹ ${bookingList[index].approxAmount.toString()}', style: TextStyle(
+                    fontWeight: FontWeight.w600, fontSize: 14, color: colors.blackTemp
+                ),),
 
-              ])),
+              ],
+            ),
+          )),
     );
 
   }
 
-  bookingNow() async {
+  Widget bookingCard(int index) {
+    return InkWell(
+      onTap: (){
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => TableDetails(data: bookingList[index], restroData: widget.data,)));
+      },
+      child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text('Date : ',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        Text('${bookingList[index].bookingDate.toString()}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+                      ],
+                    ),
+                    Container(
+                        height: 20,
+                        child: VerticalDivider(color: colors.primary, thickness: 1,)),
 
-    var headers = {
-      'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
-    };
-    var request =
-    http.MultipartRequest('POST', Uri.parse(completeProfileApi.toString()));
+                    Row(
+                      children: [
+                        Text('Time : ',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        Text('${bookingList[index].bookingTime.toString()}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+                      ],
+                    ),
 
-    request.fields.addAll({
-    'restaurant_id': widget.data!.id.toString(),
-    'table_id': tablesList[0].id.toString(),
-    'approx_amount':'1000',
-    'date':'2023-05-05',
-    'time':'10:00',
-    'booking_amount':'100',
-    'booking_transaction_id':'ABC7896543214',
-    'booking_payment_status':'1',
-    'booking_id':'22' ,
-      'user_id': CUR_USERID.toString()
-    });
+                  ],),
+                Divider(color: colors.primary, thickness: 1,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Booking ID : ',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5.0, bottom: 5),
+                          child: Text('Restaurant : ',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        ),
+                        Text('Table Type : ',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                      ],
+                    ),
 
-    // if(imagePathList != null) {
-    //   for (var i = 0; i < imagePathList.length; i++) {
-    //     imagePathList == null
-    //         ? null
-    //         : request.files.add(await http.MultipartFile.fromPath(
-    //         'images[]', imagePathList[i].toString()));
-    //   }
-    // }
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${bookingList[index].id.toString()}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
 
-    print(
-        "this is complete profile request ====>>>> ${request.fields.toString()} and ${request.files.toString()}");
-    request.headers.addAll(headers);
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5.0, bottom: 5),
+                          child: Text('${bookingList[index].storeName.toString()}',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+                        ),
 
-    http.StreamedResponse response = await request.send();
-    if (response.statusCode == 200) {
-      String str = await response.stream.bytesToString();
-      var result = json.decode(str);
-      bool error = result['error'];
-      String msg = result['message'];
-      print("this is result response $error and $msg");
-      if (!error) {
-        setSnackbar(msg, context);
-        // Navigator.pushReplacement(context,
-        //     MaterialPageRoute(builder: (context) => Dashboard1()));
-      } else {
-        setSnackbar(msg, context);
-      }
-    } else {
-      print(response.reasonPhrase);
-    }
+                        Text('${bookingList[index].tableName.toString()}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+
+                      ],
+
+                    )
+                  ],
+                ),
+                Divider(color: colors.primary, thickness: 1,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Approx Amount : ', style: TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 14, color: colors.blackTemp
+                    ),),
+                    Container(
+                      padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+                      decoration: BoxDecoration(
+                        color: colors.primary,
+                        borderRadius: BorderRadius.circular(10)
+                      ),
+                      child: Center(
+                        child: Text("₹ ${bookingList[index].approxAmount.toString()}",
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.whiteTemp)),
+
+                      ),
+                    )
+                  ],
+                ),
+
+              ],
+            ),
+          )),
+    );
+
   }
+
 
   ///RAZORPAY
   ///
-    void _handlePaymentSuccess(PaymentSuccessResponse response) {
-      bookingNow();
-      // placeOrder(response.paymentId);
-      // sendRequest(response.paymentId, "RazorPay");
-    }
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    // bookingNow();
+    // placeOrder(response.paymentId);
+    // sendRequest(response.paymentId, "RazorPay");
+  }
 
-    void _handlePaymentError(PaymentFailureResponse response) {
-      setSnackbar(response.message!, context);
+  void _handlePaymentError(PaymentFailureResponse response) {
+    setSnackbar(response.message!, context);
+    if (mounted)
+      setState(() {
+        _isProgress = false;
+      });
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    print("EXTERNAL_WALLET: " + response.walletName!);
+  }
+
+  razorpayPayment(double price) async {
+    SettingProvider settingsProvider =
+    Provider.of<SettingProvider>(this.context, listen: false);
+
+    String? contact = settingsProvider.mobile;
+    String? email = settingsProvider.email;
+
+    double amt = price * 100;
+
+    if (contact != '' && email != '') {
       if (mounted)
         setState(() {
-          _isProgress = false;
+          _isProgress = true;
         });
-    }
 
-    void _handleExternalWallet(ExternalWalletResponse response) {
-      print("EXTERNAL_WALLET: " + response.walletName!);
-    }
+      var options = {
+        KEY: razorpayId,
+        AMOUNT: amt.toString(),
+        NAME: settingsProvider.userName,
+        'prefill': {CONTACT: contact, EMAIL: email},
+      };
 
-    razorpayPayment(double price) async {
-      SettingProvider settingsProvider =
-          Provider.of<SettingProvider>(this.context, listen: false);
-
-      String? contact = settingsProvider.mobile;
-      String? email = settingsProvider.email;
-
-      double amt = price * 100;
-
-      if (contact != '' && email != '') {
-        if (mounted)
-          setState(() {
-            _isProgress = true;
-          });
-
-        var options = {
-          KEY: razorpayId,
-          AMOUNT: amt.toString(),
-          NAME: settingsProvider.userName,
-          'prefill': {CONTACT: contact, EMAIL: email},
-        };
-
-        try {
-          _razorpay.open(options);
-        } catch (e) {
-          debugPrint(e.toString());
-        }
-      } else {
-        if (email == '')
-          setSnackbar(getTranslated(context, 'emailWarning')!, context);
-        else if (contact == '')
-          setSnackbar(getTranslated(context, 'phoneWarning')!, context);
+      try {
+        _razorpay.open(options);
+      } catch (e) {
+        debugPrint(e.toString());
       }
+    } else {
+      if (email == '')
+        setSnackbar(getTranslated(context, 'emailWarning')!, context);
+      else if (contact == '')
+        setSnackbar(getTranslated(context, 'phoneWarning')!, context);
     }
+  }
   ///
   ///
   ///
@@ -668,9 +755,9 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
 
             for (int i = 0; i < paymentMethodList.length; i++) {
               payModel.add(RadioModel(
-                  isSelected: i == selectedMethod ? true : false,
-                  name: paymentMethodList[i],
-                  ));
+                isSelected: i == selectedMethod ? true : false,
+                name: paymentMethodList[i],
+              ));
             }
           }
         }
@@ -694,7 +781,7 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
   @override
   void initState() {
     super.initState();
-    getRestaurantTable();
+    getMyBookings();
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
@@ -717,74 +804,74 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80),
-        child: AppBar(
-          centerTitle: true,
-          title: Image.asset('assets/images/homelogo.png', height: 60,),
-          backgroundColor: colors.primary,
-          leading: IconButton(
-            onPressed: (){
-              Navigator.pop(context);
-            },
-            icon: Icon(Icons.arrow_back_ios, color: colors.whiteTemp,),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(80),
+          child: AppBar(
+            centerTitle: true,
+            title: Image.asset('assets/images/homelogo.png', height: 60,),
+            backgroundColor: colors.primary,
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: Icon(Icons.arrow_back_ios, color: colors.whiteTemp,),
+            ),
+            // actions: [
+            //   Padding(
+            //     padding: const EdgeInsets.all(8.0),
+            //     child: InkWell(
+            //       onTap: () async {
+            //         // var result = await Navigator.push(context, MaterialPageRoute(builder: (context)=> AddTable()));
+            //         // if(result != null){
+            //         //   getRestroTables();
+            //         // }
+            //       },
+            //       child: Container(
+            //         padding: EdgeInsets.all(8),
+            //         decoration: BoxDecoration(
+            //             border: Border.all(color: colors.whiteTemp),
+            //             borderRadius: BorderRadius.circular(30)
+            //         ),
+            //         child: Row(
+            //           mainAxisAlignment: MainAxisAlignment.center,
+            //           children: [
+            //             Text("Add Table ", style: TextStyle(
+            //                 color: colors.whiteTemp,
+            //                 fontWeight: FontWeight.w600,
+            //                 fontSize: 16
+            //             ),),
+            //             Icon(Icons.add_box, color: colors.whiteTemp,)
+            //           ],
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            //
+            //   // SizedBox(
+            //   //   height: 30,
+            //   //   child: Container(
+            //   //     height: 30,
+            //   //     width: 100,
+            //   //     decoration: BoxDecoration(
+            //   //       color: Colors.colors.whiteTemp, borderRadius: BorderRadius.circular(20)
+            //   //     ),
+            //   //     child: Center(
+            //   //       child: Row(
+            //   //         mainAxisAlignment: MainAxisAlignment.center,
+            //   //         children: [
+            //   //           Text("Add Table", style: TextStyle(
+            //   //             color: primary
+            //   //           ),),
+            //   //           Icon(Icons.add_box, color: primary,)
+            //   //         ],
+            //   //       ),
+            //   //     ),
+            //   //   ),
+            //   // )
+            //
+            // ],
           ),
-          // actions: [
-          //   Padding(
-          //     padding: const EdgeInsets.all(8.0),
-          //     child: InkWell(
-          //       onTap: () async {
-          //         // var result = await Navigator.push(context, MaterialPageRoute(builder: (context)=> AddTable()));
-          //         // if(result != null){
-          //         //   getRestroTables();
-          //         // }
-          //       },
-          //       child: Container(
-          //         padding: EdgeInsets.all(8),
-          //         decoration: BoxDecoration(
-          //             border: Border.all(color: colors.whiteTemp),
-          //             borderRadius: BorderRadius.circular(30)
-          //         ),
-          //         child: Row(
-          //           mainAxisAlignment: MainAxisAlignment.center,
-          //           children: [
-          //             Text("Add Table ", style: TextStyle(
-          //                 color: colors.whiteTemp,
-          //                 fontWeight: FontWeight.w600,
-          //                 fontSize: 16
-          //             ),),
-          //             Icon(Icons.add_box, color: colors.whiteTemp,)
-          //           ],
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          //
-          //   // SizedBox(
-          //   //   height: 30,
-          //   //   child: Container(
-          //   //     height: 30,
-          //   //     width: 100,
-          //   //     decoration: BoxDecoration(
-          //   //       color: Colors.colors.whiteTemp, borderRadius: BorderRadius.circular(20)
-          //   //     ),
-          //   //     child: Center(
-          //   //       child: Row(
-          //   //         mainAxisAlignment: MainAxisAlignment.center,
-          //   //         children: [
-          //   //           Text("Add Table", style: TextStyle(
-          //   //             color: primary
-          //   //           ),),
-          //   //           Icon(Icons.add_box, color: primary,)
-          //   //         ],
-          //   //       ),
-          //   //     ),
-          //   //   ),
-          //   // )
-          //
-          // ],
         ),
-      ),
         body: bodyWidget());
   }
 }

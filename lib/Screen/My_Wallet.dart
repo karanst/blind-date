@@ -137,7 +137,34 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
         key: _scaffoldKey,
-        appBar: getAppBar(getTranslated(context, 'MYWALLET')!, context),
+      appBar:  PreferredSize(
+          preferredSize: Size(MediaQuery.of(context).size.width, 100),
+          child: AppBar(
+            centerTitle: true,
+            // leading: Icon(Icons.arrow_back_ios, color: colors.primary,),
+            title: Image.asset('assets/images/homelogo.png', height: 60,),
+            backgroundColor: colors.primary,
+            iconTheme: IconThemeData(color: colors.whiteTemp),
+            // actions: [
+            //   InkWell(
+            //     onTap: (){
+            //      // Navigator.push(context, MaterialPageRoute(builder: (context)=> WalletHistory()));
+            //     },
+            //     child: Padding(
+            //       padding: const EdgeInsets.only(right: 25.0, top: 4),
+            //       child: Column(
+            //         children: [
+            //           Icon(Icons.wallet, color: colors.whiteTemp, size: 34,),
+            //           Text("Wallet", style: TextStyle(
+            //               color: colors.whiteTemp,
+            //               fontWeight: FontWeight.w600
+            //           ),)
+            //         ],
+            //       ),
+            //     ),
+            //   )],
+          ),
+        ),
         body: _isNetworkAvail
             ? _isLoading
                 ? shimmer(context)
@@ -1051,13 +1078,13 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                         Theme.of(context).colorScheme.fontColor,
                                     fontWeight: FontWeight.bold));
                       }),
-                      SimBtn(
-                        size: 0.8,
-                        title: getTranslated(context, "ADD_MONEY"),
-                        onBtnSelected: () {
-                          _showDialog();
-                        },
-                      ),
+                      // SimBtn(
+                      //   size: 0.8,
+                      //   title: getTranslated(context, "ADD_MONEY"),
+                      //   onBtnSelected: () {
+                      //     _showDialog();
+                      //   },
+                      // ),
                       SimBtn(
                         size: 0.9,
                         title: "Withdraw Money",
@@ -1081,7 +1108,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text('Enter Amount', style: TextStyle(
-                                      fontSize: 24,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.w600
                                     ),),
                                     Container(
@@ -1097,7 +1124,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                           },
                                           decoration: InputDecoration(
                                               border: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(15)))
+                                                  borderRadius: BorderRadius.circular(50)))
                                         // decoration: InputDecoration(
                                         //   border: OutlineInputBorder(),
                                         // ),
@@ -1172,7 +1199,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                         },
                                         decoration: InputDecoration(
                                             border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(15)))
+                                                borderRadius: BorderRadius.circular(50)))
                                       // decoration: InputDecoration(
                                       //   border: OutlineInputBorder(),
                                       // ),
@@ -1195,9 +1222,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                   }, child: Text("Submit", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),), style: ElevatedButton.styleFrom(
                                       primary: colors.primary,
                                       fixedSize: Size(MediaQuery.of(context).size.width, 50),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(15)
-                                      )
+                                      shape: StadiumBorder()
                                   ),)
                                   // AppBtn(
                                   //   label: "Submit",
@@ -1248,7 +1273,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                         // },
                                         decoration: InputDecoration(
                                             border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(15)))
+                                                borderRadius: BorderRadius.circular(50)))
                                       // decoration: InputDecoration(
                                       //   border: OutlineInputBorder(),
                                       // ),
@@ -1277,7 +1302,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                         decoration: InputDecoration(
                                             counterText: "",
                                             border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(15)))
+                                                borderRadius: BorderRadius.circular(50)))
                                       // decoration: InputDecoration(
                                       //   border: OutlineInputBorder(),
                                       // ),
@@ -1333,7 +1358,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                         // },
                                         decoration: InputDecoration(
                                             border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(15)))
+                                                borderRadius: BorderRadius.circular(50)))
                                       // decoration: InputDecoration(
                                       //   border: OutlineInputBorder(),
                                       // ),
@@ -1360,7 +1385,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                         // },
                                         decoration: InputDecoration(
                                             border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(15)))
+                                                borderRadius: BorderRadius.circular(50)))
                                       // decoration: InputDecoration(
                                       //   border: OutlineInputBorder(),
                                       // ),
@@ -1383,7 +1408,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                       height: 60,
                                       padding: EdgeInsets.only(left: 10),
                                       decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(15),
+                                          borderRadius: BorderRadius.circular(50),
                                           border: Border.all(
                                               color: Colors.black.withOpacity(0.7))),
                                       child: DropdownButton(
@@ -1430,11 +1455,11 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                     }else{
                                       setSnackbar("Please enter a amount first");
                                     }
-                                  }, child: Text("Submit", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),), style: ElevatedButton.styleFrom(
+                                  }, child: Text("Submit", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),), style: ElevatedButton.styleFrom(
                                     primary: colors.primary,
-                                    fixedSize: Size(MediaQuery.of(context).size.width, 50),
+                                    fixedSize: Size(MediaQuery.of(context).size.width, 40),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15)
+                                      borderRadius: BorderRadius.circular(50)
                                     )
                                   ),)
                                 ],

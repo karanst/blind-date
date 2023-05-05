@@ -23,7 +23,10 @@ final Uri signUpApi = Uri.parse(baseUrl + 'signup');
 final Uri completeProfileApi = Uri.parse(baseUrl + 'update_user_settings');
 final Uri getRestroListApi = Uri.parse(baseUrl + 'search_restaurants');
 final Uri getRestroTablesApi = Uri.parse(baseUrl + 'search_restaurants');
-
+final Uri bookNowApi = Uri.parse(baseUrl + 'booking');
+final Uri getUserDetailsApi = Uri.parse(baseUrl + 'get_user_details');
+final Uri updateSignUpApi = Uri.parse(baseUrl + 'update_signup');
+final Uri bookingListApi = Uri.parse(baseUrl + 'booking_lists');
 
 final Uri referFormApi = Uri.parse(baseUrl + 'referral_form');
 final Uri referralListApi = Uri.parse(baseUrl + 'refferal_list');

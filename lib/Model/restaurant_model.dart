@@ -1,6 +1,6 @@
 /// error : false
 /// message : "Restaurants lists"
-/// data : [{"id":"76","store_name":"Shosha","store_description":"Excellent Store ","logo":"https://developmentalphawizz.com/blind_date/uploads/seller/image_picker514298188169310186.jpg","no_of_ratings":"0","status":"1","open_close_status":"1","username":"Shiva","email":"shiva@gmail.com","mobile":"9928494837","address":"Vijay Nagar","pro_pic":"https://developmentalphawizz.com/blind_date/assets/no-image.png","is_date_available":false,"is_favourites":false,"booking_date":"","booking_time":"","tables":[{"id":"2","name":"Roof Toop","res_id":"76","benifits":"AC, POOL, WiFi","price":"100","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/","created_at":"2023-04-26 19:14:52","is_available":true},{"id":"19","name":"High Top Table","res_id":"76","benifits":"AC, POOL, WiFi","price":"100","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/uploads/media/2023/romantic-rooftops-hero.jpg","created_at":"2023-04-28 12:39:36","is_available":true},{"id":"21","name":"High Top Table","res_id":"76","benifits":"AC, Wifi","price":"1000","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/uploads/media/2023/images123.jpg","created_at":"2023-04-28 12:38:21","is_available":true},{"id":"59","name":"Sofas & Coffee Table","res_id":"76","benifits":"wifi","price":"5000","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/uploads/table_images/image_picker4073291124711824934.jpg","created_at":"2023-04-28 20:44:48","is_available":true},{"id":"60","name":"High Top Table","res_id":"76","benifits":"free wifi, deinking","price":"1200","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/uploads/table_images/image_picker4554114207476714663.jpg","created_at":"2023-04-28 22:05:13","is_available":true}]}]
+/// data : [{"id":"76","store_name":"Shosha","store_description":"Excellent Store ","logo":"https://developmentalphawizz.com/blind_date/uploads/seller/image_picker514298188169310186.jpg","no_of_ratings":"0","status":"1","open_close_status":"1","username":"Shiva","email":"shiva@gmail.com","mobile":"9928494837","address":"Vijay Nagar","pro_pic":"https://developmentalphawizz.com/blind_date/assets/no-image.png","is_date_available":false,"is_favourites":false,"booking_date":"","booking_time":"","booking_amount":"100","tables":[{"id":"2","name":"Roof Toop","res_id":"76","benifits":"AC, POOL, WiFi","price":"100","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/","created_at":"2023-04-26 19:14:52","is_available":true},{"id":"19","name":"High Top Table","res_id":"76","benifits":"AC, POOL, WiFi","price":"100","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/uploads/media/2023/romantic-rooftops-hero.jpg","created_at":"2023-04-28 12:39:36","is_available":true},{"id":"21","name":"High Top Table","res_id":"76","benifits":"AC, Wifi","price":"1000","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/uploads/media/2023/images123.jpg","created_at":"2023-04-28 12:38:21","is_available":true},{"id":"59","name":"Sofas & Coffee Table","res_id":"76","benifits":"wifi","price":"5000","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/uploads/table_images/image_picker4073291124711824934.jpg","created_at":"2023-04-28 20:44:48","is_available":true},{"id":"60","name":"High Top Table","res_id":"76","benifits":"free wifi, deinking","price":"1200","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/uploads/table_images/image_picker4554114207476714663.jpg","created_at":"2023-04-28 22:05:13","is_available":true}]}]
 
 class RestaurantModel {
   RestaurantModel({
@@ -64,6 +64,7 @@ RestaurantModel copyWith({  bool? error,
 /// is_favourites : false
 /// booking_date : ""
 /// booking_time : ""
+/// booking_amount : "100"
 /// tables : [{"id":"2","name":"Roof Toop","res_id":"76","benifits":"AC, POOL, WiFi","price":"100","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/","created_at":"2023-04-26 19:14:52","is_available":true},{"id":"19","name":"High Top Table","res_id":"76","benifits":"AC, POOL, WiFi","price":"100","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/uploads/media/2023/romantic-rooftops-hero.jpg","created_at":"2023-04-28 12:39:36","is_available":true},{"id":"21","name":"High Top Table","res_id":"76","benifits":"AC, Wifi","price":"1000","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/uploads/media/2023/images123.jpg","created_at":"2023-04-28 12:38:21","is_available":true},{"id":"59","name":"Sofas & Coffee Table","res_id":"76","benifits":"wifi","price":"5000","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/uploads/table_images/image_picker4073291124711824934.jpg","created_at":"2023-04-28 20:44:48","is_available":true},{"id":"60","name":"High Top Table","res_id":"76","benifits":"free wifi, deinking","price":"1200","total_tables":"5","image":"https://developmentalphawizz.com/blind_date/uploads/table_images/image_picker4554114207476714663.jpg","created_at":"2023-04-28 22:05:13","is_available":true}]
 
 class Restaurants {
@@ -84,6 +85,7 @@ class Restaurants {
       bool? isFavourites, 
       String? bookingDate, 
       String? bookingTime, 
+      String? bookingAmount, 
       List<Tables>? tables,}){
     _id = id;
     _storeName = storeName;
@@ -101,6 +103,7 @@ class Restaurants {
     _isFavourites = isFavourites;
     _bookingDate = bookingDate;
     _bookingTime = bookingTime;
+    _bookingAmount = bookingAmount;
     _tables = tables;
 }
 
@@ -121,6 +124,7 @@ class Restaurants {
     _isFavourites = json['is_favourites'];
     _bookingDate = json['booking_date'];
     _bookingTime = json['booking_time'];
+    _bookingAmount = json['booking_amount'];
     if (json['tables'] != null) {
       _tables = [];
       json['tables'].forEach((v) {
@@ -144,6 +148,7 @@ class Restaurants {
   bool? _isFavourites;
   String? _bookingDate;
   String? _bookingTime;
+  String? _bookingAmount;
   List<Tables>? _tables;
 Restaurants copyWith({  String? id,
   String? storeName,
@@ -161,6 +166,7 @@ Restaurants copyWith({  String? id,
   bool? isFavourites,
   String? bookingDate,
   String? bookingTime,
+  String? bookingAmount,
   List<Tables>? tables,
 }) => Restaurants(  id: id ?? _id,
   storeName: storeName ?? _storeName,
@@ -178,6 +184,7 @@ Restaurants copyWith({  String? id,
   isFavourites: isFavourites ?? _isFavourites,
   bookingDate: bookingDate ?? _bookingDate,
   bookingTime: bookingTime ?? _bookingTime,
+  bookingAmount: bookingAmount ?? _bookingAmount,
   tables: tables ?? _tables,
 );
   String? get id => _id;
@@ -196,6 +203,7 @@ Restaurants copyWith({  String? id,
   bool? get isFavourites => _isFavourites;
   String? get bookingDate => _bookingDate;
   String? get bookingTime => _bookingTime;
+  String? get bookingAmount => _bookingAmount;
   List<Tables>? get tables => _tables;
 
   Map<String, dynamic> toJson() {
@@ -216,6 +224,7 @@ Restaurants copyWith({  String? id,
     map['is_favourites'] = _isFavourites;
     map['booking_date'] = _bookingDate;
     map['booking_time'] = _bookingTime;
+    map['booking_amount'] = _bookingAmount;
     if (_tables != null) {
       map['tables'] = _tables?.map((v) => v.toJson()).toList();
     }

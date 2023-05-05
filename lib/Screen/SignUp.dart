@@ -294,18 +294,39 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       if (!error) {
         setSnackbar(getTranslated(context, 'REGISTER_SUCCESS_MSG')!);
         var i = getdata["data"][0];
-
         id = i[ID];
-        name = i[USERNAME];
+        username = i[USERNAME];
         email = i[EMAIL];
         mobile = i[MOBILE];
-        //countrycode=i[COUNTRY_CODE];
+        city = i[CITY];
+        area = i[AREA];
+        address = i[ADDRESS];
+        pincode = i[PINCODE];
+        latitude = i[LATITUDE];
+        longitude = i[LONGITUDE];
+        image = i[IMAGE];
+        gender=i['gender'];
+
         CUR_USERID = id;
+        // CUR_USERNAME = username;
 
-        // CUR_USERNAME = name;
+        UserProvider userProvider =
+        Provider.of<UserProvider>(this.context, listen: false);
+        userProvider.setName(username ?? "");
+        userProvider.setEmail(email ?? "");
+        userProvider.setProfilePic(image ?? "");
+        userProvider.setGender(gender ?? "");
 
-        UserProvider userProvider = context.read<UserProvider>();
-        userProvider.setName(name ?? "");
+        SettingProvider settingProvider =
+        Provider.of<SettingProvider>(context, listen: false);
+
+        settingProvider.setPrefrenceBool(ISFIRSTTIME, true);
+
+        settingProvider.saveUserDetail(id!, username, email, mobile,
+            gender, city, area, address, pincode, latitude, longitude, image, context);
+
+        setPrefrenceBool(isLogin, true);
+
 
         // SettingProvider settingProvider = context.read<SettingProvider>();
         // settingProvider.saveUserDetail(id!, name, email, mobile, city, area,
@@ -359,28 +380,47 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       String str = await response.stream.bytesToString();
       var result = json.decode(str);
       bool error = result['error'];
-      String msg = result['message'];
+      String? msg = result['message'];
       print("this is result response $error and $msg");
       if (!error) {
+        setSnackbar(msg.toString());
         var i = result["data"][0];
-
         id = i[ID];
-        name = i[USERNAME];
+        username = i[USERNAME];
         email = i[EMAIL];
         mobile = i[MOBILE];
-        //countrycode=i[COUNTRY_CODE];
+        city = i[CITY];
+        area = i[AREA];
+        address = i[ADDRESS];
+        pincode = i[PINCODE];
+        latitude = i[LATITUDE];
+        longitude = i[LONGITUDE];
+        image = i[IMAGE];
+        gender=i['gender'];
+
         CUR_USERID = id;
+        // CUR_USERNAME = username;
 
-        // CUR_USERNAME = name;
+        UserProvider userProvider =
+        Provider.of<UserProvider>(this.context, listen: false);
+        userProvider.setName(username ?? "");
+        userProvider.setEmail(email ?? "");
+        userProvider.setProfilePic(image ?? "");
+        userProvider.setGender(gender ?? "");
 
-        UserProvider userProvider = context.read<UserProvider>();
-        userProvider.setName(name ?? "");
+        SettingProvider settingProvider =
+        Provider.of<SettingProvider>(context, listen: false);
+
+        settingProvider.setPrefrenceBool(ISFIRSTTIME, true);
+
+        settingProvider.saveUserDetail(id!, username, email, mobile,
+            gender, city, area, address, pincode, latitude, longitude, image, context);
 
         setPrefrenceBool(isLogin, true);
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> CompleteProfileScreen()));
 
       } else {
-        setSnackbar(msg);
+        setSnackbar(msg!);
       }
 
     } else {

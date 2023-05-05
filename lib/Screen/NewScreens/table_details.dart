@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:blind_date/Helper/Constant.dart';
 import 'package:blind_date/Helper/Stripe_Service.dart';
 import 'package:blind_date/Helper/user_custom_radio.dart';
+import 'package:blind_date/Model/get_coupon_model.dart';
 import 'package:blind_date/Model/restaurant_model.dart';
 import 'package:blind_date/Provider/SettingProvider.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
@@ -16,6 +17,7 @@ import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Model/Transaction_Model.dart';
 
@@ -102,190 +104,193 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
       });
     }
     var per = selectedTime!.period.toString().split(".");
-    print(
-        "selected time here ${selectedTime!.format(context).toString()} and ${per[1]}");
+    print("selected time here ${selectedTime!.format(context).toString()} and ${per[1]}");
   }
 
-  void openRequestTrainingBottomSheet() {
-    showModalBottomSheet(
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(40.0), topRight: Radius.circular(40.0))),
-      isScrollControlled: true,
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return
-
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  children: [
-
-                    Padding(
-                        padding: EdgeInsets.all(15),
-                        child: Text(
-                          "Book Now", style: TextStyle(color: Theme
-                            .of(context)
-                            .colorScheme
-                            .fontColor,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600),)),
-                    // catList.isNotEmpty ?
-                    // Padding(
-                    //     padding: const EdgeInsets.all(20),
-                    //     child: Container(
-                    //       padding: EdgeInsets.all(8),
-                    //       height: 50,
-                    //       width: MediaQuery
-                    //           .of(context)
-                    //           .size
-                    //           .width,
-                    //       decoration: BoxDecoration(
-                    //           color: Theme
-                    //               .of(context)
-                    //               .colorScheme
-                    //               .white,
-                    //           borderRadius: BorderRadius.circular(12),
-                    //           border: Border.all(color: Theme
-                    //               .of(context)
-                    //               .colorScheme
-                    //               .fontColor)
-                    //       ),
-                    //       child: DropdownButtonHideUnderline(
-                    //         child: DropdownButton(
-                    //           hint: Text('Select Product type'),
-                    //           // Not necessary for Option 1
-                    //           value: categoryValue,
-                    //           onChanged: (String? newValue) {
-                    //             setState(() {
-                    //               categoryValue = newValue;
-                    //             });
-                    //             print("this is category value $categoryValue");
-                    //           },
-                    //           items: catList.map((item) {
-                    //             return DropdownMenuItem(
-                    //               child: Text(
-                    //                 item.name!, style: TextStyle(color: Theme
-                    //                   .of(context)
-                    //                   .colorScheme
-                    //                   .fontColor),),
-                    //               value: item.id,
-                    //             );
-                    //           }).toList(),
-                    //         ),
-                    //       ),
-                    //     )
-                    // )
-                    //     : SizedBox.shrink(),
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Container(
-                        padding:
-                        EdgeInsets.only(bottom: MediaQuery
-                            .of(context)
-                            .viewInsets
-                            .bottom),
-                        decoration: BoxDecoration(
-                          color: Theme
-                              .of(context)
-                              .colorScheme
-                              .white,
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: Padding(
-                          padding:
-                          const EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 5.0),
-                          child: TextFormField(
-                            //initialValue: nameController.text,
-                            style: TextStyle(
-                                color: Theme
-                                    .of(context)
-                                    .colorScheme
-                                    .fontColor,
-                                fontWeight: FontWeight.bold),
-                            controller: messageController,
-                            decoration: InputDecoration(
-                                label: Text(
-                                  "Message",
-                                  style: TextStyle(
-                                    color: Theme
-                                        .of(context)
-                                        .colorScheme
-                                        .primary,
-                                  ),
-                                ),
-                                fillColor: Theme
-                                    .of(context)
-                                    .colorScheme
-                                    .primary,
-                                border: InputBorder.none),
-                            // validator: (val) => validateUserName(
-                            //     val!,
-                            //     getTranslated(context, 'USER_REQUIRED'),
-                            //     getTranslated(context, 'USER_LENGTH')),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 20.0, top: 10),
-                      child: ElevatedButton(onPressed: () {
-                        razorpayPayment(1000);
-                      },
-                          style: ElevatedButton.styleFrom(primary: colors.primary,
-                              fixedSize: Size(MediaQuery
-                                  .of(context)
-                                  .size
-                                  .width - 60, 40),
-                              shape: StadiumBorder()),
-                          child: Text("Book Now", style: TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 16
-                              , color: colors.whiteTemp),)),
-                    )
-                    // Padding(
-                    //   padding: EdgeInsets.only(
-                    //       bottom: MediaQuery.of(context).viewInsets.bottom),
-                    //   child: Form(
-                    //     key: _changeUserDetailsKey,
-                    //     child: Column(
-                    //       mainAxisSize: MainAxisSize.max,
-                    //       children: [
-                    //         bottomSheetHandle(),
-                    //         bottomsheetLabel("EDIT_PROFILE_LBL"),
-                    //         Selector<UserProvider, String>(
-                    //             selector: (_, provider) => provider.profilePic,
-                    //             builder: (context, profileImage, child) {
-                    //               return Padding(
-                    //                 padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    //                 child: getUserImage(profileImage, _imgFromGallery),
-                    //               );
-                    //             }),
-                    //         Selector<UserProvider, String>(
-                    //             selector: (_, provider) => provider.curUserName,
-                    //             builder: (context, userName, child) {
-                    //               return setNameField(userName);
-                    //             }),
-                    //         Selector<UserProvider, String>(
-                    //             selector: (_, provider) => provider.email,
-                    //             builder: (context, userEmail, child) {
-                    //               return setEmailField(userEmail);
-                    //             }),
-                    //         saveButton(getTranslated(context, "SAVE_LBL")!, () {
-                    //           validateAndSave(_changeUserDetailsKey);
-                    //         }),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
-                  ],
-                );
-            }
-        );
-      },
-    );
-  }
+  // void openRequestTrainingBottomSheet() {
+  //   showModalBottomSheet(
+  //     shape: const RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.only(
+  //             topLeft: Radius.circular(40.0), topRight: Radius.circular(40.0))),
+  //     isScrollControlled: true,
+  //     context: context,
+  //     builder: (context) {
+  //       return StatefulBuilder(
+  //           builder: (BuildContext context, StateSetter setState) {
+  //             return
+  //
+  //               Wrap(
+  //                 alignment: WrapAlignment.center,
+  //                 children: [
+  //
+  //                   Padding(
+  //                       padding: EdgeInsets.all(15),
+  //                       child: Text(
+  //                         "Book Now", style: TextStyle(color: Theme
+  //                           .of(context)
+  //                           .colorScheme
+  //                           .fontColor,
+  //                           fontSize: 18,
+  //                           fontWeight: FontWeight.w600),)),
+  //                   // catList.isNotEmpty ?
+  //                   // Padding(
+  //                   //     padding: const EdgeInsets.all(20),
+  //                   //     child: Container(
+  //                   //       padding: EdgeInsets.all(8),
+  //                   //       height: 50,
+  //                   //       width: MediaQuery
+  //                   //           .of(context)
+  //                   //           .size
+  //                   //           .width,
+  //                   //       decoration: BoxDecoration(
+  //                   //           color: Theme
+  //                   //               .of(context)
+  //                   //               .colorScheme
+  //                   //               .white,
+  //                   //           borderRadius: BorderRadius.circular(12),
+  //                   //           border: Border.all(color: Theme
+  //                   //               .of(context)
+  //                   //               .colorScheme
+  //                   //               .fontColor)
+  //                   //       ),
+  //                   //       child: DropdownButtonHideUnderline(
+  //                   //         child: DropdownButton(
+  //                   //           hint: Text('Select Product type'),
+  //                   //           // Not necessary for Option 1
+  //                   //           value: categoryValue,
+  //                   //           onChanged: (String? newValue) {
+  //                   //             setState(() {
+  //                   //               categoryValue = newValue;
+  //                   //             });
+  //                   //             print("this is category value $categoryValue");
+  //                   //           },
+  //                   //           items: catList.map((item) {
+  //                   //             return DropdownMenuItem(
+  //                   //               child: Text(
+  //                   //                 item.name!, style: TextStyle(color: Theme
+  //                   //                   .of(context)
+  //                   //                   .colorScheme
+  //                   //                   .fontColor),),
+  //                   //               value: item.id,
+  //                   //             );
+  //                   //           }).toList(),
+  //                   //         ),
+  //                   //       ),
+  //                   //     )
+  //                   // )
+  //                   //     : SizedBox.shrink(),
+  //                   Padding(
+  //                     padding: const EdgeInsets.all(20),
+  //                     child: Container(
+  //                       padding:
+  //                       EdgeInsets.only(bottom: MediaQuery
+  //                           .of(context)
+  //                           .viewInsets
+  //                           .bottom),
+  //                       decoration: BoxDecoration(
+  //                         color: Theme
+  //                             .of(context)
+  //                             .colorScheme
+  //                             .white,
+  //                         borderRadius: BorderRadius.circular(10.0),
+  //                       ),
+  //                       child: Padding(
+  //                         padding:
+  //                         const EdgeInsets.symmetric(
+  //                             horizontal: 10.0, vertical: 5.0),
+  //                         child: TextFormField(
+  //                           //initialValue: nameController.text,
+  //                           style: TextStyle(
+  //                               color: Theme
+  //                                   .of(context)
+  //                                   .colorScheme
+  //                                   .fontColor,
+  //                               fontWeight: FontWeight.bold),
+  //                           controller: messageController,
+  //                           decoration: InputDecoration(
+  //                               label: Text(
+  //                                 "Message",
+  //                                 style: TextStyle(
+  //                                   color: Theme
+  //                                       .of(context)
+  //                                       .colorScheme
+  //                                       .primary,
+  //                                 ),
+  //                               ),
+  //                               fillColor: Theme
+  //                                   .of(context)
+  //                                   .colorScheme
+  //                                   .primary,
+  //                               border: InputBorder.none),
+  //                           // validator: (val) => validateUserName(
+  //                           //     val!,
+  //                           //     getTranslated(context, 'USER_REQUIRED'),
+  //                           //     getTranslated(context, 'USER_LENGTH')),
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   Padding(
+  //                     padding: const EdgeInsets.only(bottom: 20.0, top: 10),
+  //                     child: ElevatedButton(onPressed: () {
+  //                       // if(selectedDate != null && selectedTime != null) {
+  //                       //   razorpayPayment(1000);
+  //                       // }else{
+  //                       //   setSnackbar("Please select booking date and time", context);
+  //                       // }
+  //                     },
+  //                         style: ElevatedButton.styleFrom(primary: colors.primary,
+  //                             fixedSize: Size(MediaQuery
+  //                                 .of(context)
+  //                                 .size
+  //                                 .width - 60, 40),
+  //                             shape: StadiumBorder()),
+  //                         child: Text("Book Now", style: TextStyle(
+  //                             fontWeight: FontWeight.w600, fontSize: 16
+  //                             , color: colors.whiteTemp),)),
+  //                   )
+  //                   // Padding(
+  //                   //   padding: EdgeInsets.only(
+  //                   //       bottom: MediaQuery.of(context).viewInsets.bottom),
+  //                   //   child: Form(
+  //                   //     key: _changeUserDetailsKey,
+  //                   //     child: Column(
+  //                   //       mainAxisSize: MainAxisSize.max,
+  //                   //       children: [
+  //                   //         bottomSheetHandle(),
+  //                   //         bottomsheetLabel("EDIT_PROFILE_LBL"),
+  //                   //         Selector<UserProvider, String>(
+  //                   //             selector: (_, provider) => provider.profilePic,
+  //                   //             builder: (context, profileImage, child) {
+  //                   //               return Padding(
+  //                   //                 padding: const EdgeInsets.symmetric(vertical: 10.0),
+  //                   //                 child: getUserImage(profileImage, _imgFromGallery),
+  //                   //               );
+  //                   //             }),
+  //                   //         Selector<UserProvider, String>(
+  //                   //             selector: (_, provider) => provider.curUserName,
+  //                   //             builder: (context, userName, child) {
+  //                   //               return setNameField(userName);
+  //                   //             }),
+  //                   //         Selector<UserProvider, String>(
+  //                   //             selector: (_, provider) => provider.email,
+  //                   //             builder: (context, userEmail, child) {
+  //                   //               return setEmailField(userEmail);
+  //                   //             }),
+  //                   //         saveButton(getTranslated(context, "SAVE_LBL")!, () {
+  //                   //           validateAndSave(_changeUserDetailsKey);
+  //                   //         }),
+  //                   //       ],
+  //                   //     ),
+  //                   //   ),
+  //                   // ),
+  //                 ],
+  //               );
+  //           }
+  //       );
+  //     },
+  //   );
+  // }
 
   // deleteTable(String tableId) async{
   //   CUR_USERID = await getPrefrence(Id);
@@ -371,6 +376,37 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
       },
     );
     return completer.future;
+  }
+
+  void openPromoBottomSheet() {
+    showModalBottomSheet(
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(40.0), topRight: Radius.circular(40.0))),
+      isScrollControlled: true,
+      context: context,
+      builder: (context) {
+        return Wrap(
+          children: [
+            Center(child: Padding(
+              padding: const EdgeInsets.only(top: 10.0, bottom: 10),
+              child: Text("Apply Promo Code", style: TextStyle(color: Theme.of(context).colorScheme.fontColor, fontSize: 18),),
+            )),
+
+            Padding(
+              padding: const EdgeInsets.only(left: 12.0, right: 12),
+              child: ListView.builder(
+                  physics: NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: couponsList.length,
+                  itemBuilder: (context, index) {
+                    return couponCard(index);
+                  }),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget bodyWidget() {
@@ -553,11 +589,69 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
                     ),
                   ],
                 ),
+                const SizedBox(height: 10,),
+                InkWell(
+                  onTap: (){
+                    openPromoBottomSheet();
+                  },
+                  child: Container(
+                      padding: EdgeInsets.all(8),
+                      height: 50,
+                      width: MediaQuery.of(context).size.width - 20,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.lightWhite,
+                        borderRadius: BorderRadius.circular(40),
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                              color: Colors.grey,
+                              blurRadius: 5.0,
+                              offset: Offset(0.75, 0.75)
+                          )
+                        ],
+                        // color: Colors.white,
+                        //   border: Border.all(color: Colors.grey)
+                      ),
+                      child:  Center(
+                          child: Text('Apply Promo Code'))
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //   children: [
+                      //     selectedDate == null || selectedDate == ''
+                      //         ?
+                      //     Text(
+                      //         "Select Date",
+                      //         style: TextStyle(
+                      //             color: Theme.of(context)
+                      //                 .colorScheme
+                      //                 .fontColor))
+                      //         : Text(
+                      //       "${selectedDate.toString()}",
+                      //     ),
+                      //     Icon(Icons.calendar_month, color: colors.primary,)
+                      //
+                      //   ],
+                      // )
+
+                  ),
+                ),
+                // InkWell(
+                //   onTap: (){
+                //     openPromoBottomSheet();
+                //   },
+                //   child: Container(
+                //     child: Text("Apply Promo Code"),
+                //   ),
+                // ),
                 const SizedBox(height: 30,),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: ElevatedButton(onPressed: (){
-                    razorpayPayment(double.parse(widget.data!.price.toString()));
+                    if(selectedDate != null && selectedTime != null) {
+                      razorpayPayment(double.parse(widget.restroData!.bookingAmount
+                          .toString()));
+                    }else{
+                      setSnackbar("Please select booking date and time", context);
+                    }
                   }, child: Text("Book Now", style: TextStyle(color: colors.whiteTemp, fontWeight: FontWeight.w600, fontSize: 16),),
                     style: ElevatedButton.styleFrom(primary: colors.primary, shape: StadiumBorder(),
                         fixedSize: Size(MediaQuery.of(context).size.width-40, 40)),),
@@ -640,11 +734,11 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
                 const SizedBox(height: 5,),
                 Text('Booking amount : ₹ ${widget.restroData!.bookingAmount.toString()}', style: TextStyle(
-                    fontWeight: FontWeight.w500, fontSize: 16, color: colors.blackTemp
+                    fontWeight: FontWeight.w500, fontSize: 16, color: Theme.of(context).colorScheme.fontColor
                 ),),
                 const SizedBox(height: 5,),
                 Text('Table Price : ₹ ${widget.data!.price.toString()}', style: TextStyle(
-                    fontWeight: FontWeight.w500, fontSize: 16, color: colors.blackTemp
+                    fontWeight: FontWeight.w500, fontSize: 16, color: Theme.of(context).colorScheme.fontColor
                 ),),
                 const SizedBox(height: 10,),
 
@@ -670,24 +764,139 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
 
   }
 
+  Widget couponCard(int index) {
+    return InkWell(
+      onTap: (){
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => TableDetails(data: couponsList[index], restroData: widget.data,)));
+      },
+      child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: couponsList[index].image == null ||
+                        couponsList[index].image ==
+                            'https://developmentalphawizz.com/blind_date/'
+                        ? Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: colors.primary, width: 2)),
+                      child: Container(
+                        height: 60,
+                        width: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                              image:
+                              AssetImage('assets/images/placeholder.png'),
+                              fit: BoxFit.fitHeight),
+                          // borderRadius: BorderRadius.circular(15)
+                        ),
+                        // child: Image.network(couponsList[index].image.toString(), width: 100, height: 100,)
+                      ),
+                    )
+                        : Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: colors.primary, width: 2)),
+                      child: Container(
+                        height: 60,
+                        width: 60,
+                        decoration: BoxDecoration(
+                          // border: Border.all(color: primary, width: 1),
+                          shape: BoxShape.circle,
+                          // borderRadius: BorderRadius.circular(12),
+                          image: DecorationImage(
+                              image: NetworkImage(
+                                  couponsList[index].image.toString()),
+                              fit: BoxFit.fill),
+                          // borderRadius: BorderRadius.circular(15)
+                        ),
+                        // child: Image.network(couponsList[index].image.toString(), width: 100, height: 100,)
+                      ),
+                    )),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: MediaQuery.of(context).size.width/2 - 20,
+                      child: Text(couponsList[index].promoCode.toString(),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600,  color: Theme.of(context).colorScheme.fontColor)),
+                    ),
+                    const SizedBox(height: 5,),
+                    Container(
+                      width: MediaQuery.of(context).size.width/2 -20,
+                      child: Text('${couponsList[index].message.toString()}',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                    ),
+                    const SizedBox(height: 5,),
+                    Text('Valid till : ${couponsList[index].endDate.toString()}', style: TextStyle(
+                        fontWeight: FontWeight.w500, fontSize: 14, color: Theme.of(context).colorScheme.fontColor
+                    ),),
+
+                  ],
+                ),
+                ElevatedButton(
+                    onPressed: (){},
+                    style: ElevatedButton.styleFrom(
+                        primary: colors.primary,
+                        shape: StadiumBorder()
+                    ),
+                    child: Text("Apply", style: TextStyle(
+                        color: colors.whiteTemp,
+                        fontWeight: FontWeight.w600
+                    ),))
+                // Padding(
+                //   padding: const EdgeInsets.only(top: 60.0, right: 5),
+                //   child: Container(
+                //     padding: EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
+                //     decoration: BoxDecoration(
+                //         borderRadius: BorderRadius.circular(40),
+                //         color: colors.primary
+                //     ),
+                //     child: Center(
+                //       child: Text('₹ ${couponsList[index].price.toString()}', style: TextStyle(
+                //           fontWeight: FontWeight.w600, fontSize: 14, color: colors.whiteTemp
+                //       ),),
+                //     ),
+                //   ),
+                // )
+
+              ])),
+    );
+
+  }
+
   bookingNow(String transID) async {
 
     var headers = {
       'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
     };
     var request =
-    http.MultipartRequest('POST', Uri.parse(completeProfileApi.toString()));
+    http.MultipartRequest('POST', Uri.parse(bookNowApi.toString()));
 
     request.fields.addAll({
-      'restaurant_id': widget.data!.id.toString(),
+      'restaurant_id': widget.restroData!.id.toString(),
       'table_id': widget.data!.id.toString(),
       'approx_amount': widget.data!.price.toString(),
       'date': selectedDate.toString(),
-      'time': selectedTime.toString(),
+      'time': selectedTime!.format(context).toString(),
       'booking_amount': widget.restroData!.bookingAmount.toString(),
       'booking_transaction_id':transID.toString(),
       'booking_payment_status':'1',
-      'booking_id':'22' ,
+      'booking_id': gender == 'male' || gender == 'Male' ? widget.restroData!.bookingId.toString() : '',
       'user_id': CUR_USERID.toString()
     });
 
@@ -700,8 +909,7 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
     //   }
     // }
 
-    print(
-        "this is complete profile request ====>>>> ${request.fields.toString()} and ${request.files.toString()}");
+    print("this is complete profile request ====>>>> ${request.fields.toString()} and ${request.files.toString()}");
     request.headers.addAll(headers);
 
     http.StreamedResponse response = await request.send();
@@ -718,6 +926,32 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
       } else {
         setSnackbar(msg, context);
       }
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
+  List<Coupons> couponsList = [];
+
+  getCouponCodes() async {
+    var headers = {
+      'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
+    };
+    var request =
+    http.MultipartRequest('POST', Uri.parse(getCouponCodesApi.toString()));
+
+
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      String str = await response.stream.bytesToString();
+      var result = json.decode(str);
+      var finalResponse = GetCouponModel.fromJson(result);
+      setState(() {
+        couponsList = finalResponse.data!;
+        // _isLoading = false;
+      });
+      print("this is referral data ${couponsList.length}");
     } else {
       print(response.reasonPhrase);
     }
@@ -858,11 +1092,21 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
         });
     }
   }
+  String? gender;
+
+  getUserData() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState((){
+      gender = prefs.getString(GENDER);
+    });
+  }
 
 
   @override
   void initState() {
     super.initState();
+    getUserData();
+    getCouponCodes();
     // getRestaurantTable();
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);

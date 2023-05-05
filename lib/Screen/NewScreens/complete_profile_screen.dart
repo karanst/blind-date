@@ -10,6 +10,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({Key? key}) : super(key: key);
@@ -66,6 +67,36 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   ///
   var imagePathList;
   bool isImages = false;
+
+
+  List<File> selectedImages = []; // List of selected image
+  final picker = ImagePicker();
+
+  Future getImages() async {
+    final pickedFile = await picker.pickMultiImage(
+        imageQuality: 100, // To set quality of images
+        maxHeight: 1000, // To set maxheight of images that you want in your app
+        maxWidth: 1000); // To set maxheight of images that you want in your app
+    List<XFile> xfilePick = pickedFile;
+
+    // if atleast 1 images is selected it will add
+    // all images in selectedImages
+    // variable so that we can easily show them in UI
+    if (xfilePick.isNotEmpty) {
+      for (var i = 0; i < xfilePick.length; i++) {
+        selectedImages.add(File(xfilePick[i].path));
+      }
+      setState(
+            () {  },
+      );
+    } else {
+      // If no image is selected it will show a
+      // snackbar saying nothing is selected
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nothing is selected')));
+    }
+
+  }
   Future<void> getFromGallery() async {
 
     var result = await FilePicker.platform.pickFiles(
@@ -95,7 +126,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           ),
           InkWell(
               onTap: () async {
-                getFromGallery();
+                getImages();
+                // getFromGallery();
                 // await pickImages();
               },
               child: Container(
@@ -109,13 +141,48 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         "Upload Pictures",
                         style: TextStyle(color: colors.whiteTemp),
                       )))),
+
           const SizedBox(
-            height: 10,
+            height: 20,
           ),
-          Visibility(
-              visible: isImages,
-              child: imagePathList != null ? buildGridView() : SizedBox.shrink()
-          )
+          Container(
+            height: MediaQuery.of(context).size.width,
+            width: MediaQuery.of(context).size.width, // To show images in particular area only
+            child: selectedImages.isEmpty  // If no images is selected
+                ? const Center(child: Text('Sorry nothing selected!!'))
+            // If atleast 1 images is selected
+                : GridView.builder(
+              itemCount: selectedImages.length,
+              gridDelegate:
+              const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3
+                // Horizontally only 3 images will show
+              ),
+              itemBuilder: (BuildContext context, int index) {
+                // TO show selected file
+                return Padding(
+                  padding: const EdgeInsets.only(left: 5.0, bottom: 8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: FileImage(selectedImages[index]),
+                        fit: BoxFit.fill
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: colors.primary)
+                    ),
+                  )    // child: Image.file(selectedImages[index])),
+                );
+                // If you are making the web app then you have to
+                // use image provider as network image or in
+                // android or iOS it will as file only
+              },
+            ),
+          ),
+          // Visibility(
+          //     visible: isImages,
+          //     child: imagePathList != null ? buildGridView() : SizedBox.shrink()
+          // )
 
         ],
       ),
@@ -454,7 +521,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             CheckboxListTile(
               activeColor: colors.primary,
               value: _selectedItems.contains(item),
-              title: Text(item),
+              title: Text(item, style: TextStyle(
+                color: Theme.of(context).colorScheme.fontColor
+              ),),
               controlAffinity: ListTileControlAffinity.leading,
               onChanged: (isChecked) => _itemChange(item, isChecked!),
               // onChanged: (isChecked) {
@@ -504,9 +573,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    setState(() {
-                      currentIndex = 3;
-                    });
+                    if(_selectedItems.isNotEmpty) {
+                      setState(() {
+                        currentIndex = 3;
+                      });
+                    }else{
+                      setSnackbar("Please select languages!", context);
+                    }
                   },
                   child: Text(
                     "Next",
@@ -563,7 +636,11 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    updateUserData();
+                    if(selectedImages.length < 2) {
+                     setSnackbar("Please select atleast two images!", context);
+                    }else{
+                      updateUserData();
+                    }
                     // setState(() {
                     //   currentIndex = 3;
                     // });
@@ -605,12 +682,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       'id': CUR_USERID.toString()
     });
 
-    if(imagePathList != null) {
-      for (var i = 0; i < imagePathList.length; i++) {
-        imagePathList == null
+    if(selectedImages.isNotEmpty) {
+      for (var i = 0; i < selectedImages.length; i++) {
+        selectedImages == null
             ? null
             : request.files.add(await http.MultipartFile.fromPath(
-            'images[]', imagePathList[i].toString()));
+            'images[]', selectedImages[i].path));
       }
     }
 
@@ -627,6 +704,39 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       print("this is result response $error and $msg");
       if (!error) {
         setSnackbar(msg, context);
+        // id = i[ID];
+        // username = i[USERNAME];
+        // email = i[EMAIL];
+        // mobile = i[MOBILE];
+        // city = i[CITY];
+        // area = i[AREA];
+        // address = i[ADDRESS];
+        // pincode = i[PINCODE];
+        // latitude = i[LATITUDE];
+        // longitude = i[LONGITUDE];
+        // image = i[IMAGE];
+        // gender=i['gender'];
+        //
+        // CUR_USERID = id;
+        // // CUR_USERNAME = username;
+        //
+        // UserProvider userProvider =
+        // Provider.of<UserProvider>(this.context, listen: false);
+        // userProvider.setName(username ?? "");
+        // userProvider.setEmail(email ?? "");
+        // userProvider.setProfilePic(image ?? "");
+        // userProvider.setGender(gender ?? "");
+        //
+        // SettingProvider settingProvider =
+        // Provider.of<SettingProvider>(context, listen: false);
+        //
+        // settingProvider.setPrefrenceBool(ISFIRSTTIME, true);
+        //
+        // settingProvider.saveUserDetail(id!, username, email, mobile,
+        //     gender, city, area, address, pincode, latitude, longitude, image, context);
+        //
+        // setPrefrenceBool(isLogin, true);
+
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) => Dashboard1()));
       } else {

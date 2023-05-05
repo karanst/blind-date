@@ -72,7 +72,7 @@ getAppBar(String title, BuildContext context) {
             padding: const EdgeInsets.only(right: 25.0, top: 4),
             child: Column(
               children: [
-                Icon(Icons.wallet, color: colors.whiteTemp, size: 34,),
+                Icon(Icons.wallet, color: colors.whiteTemp, size: 30,),
                 Text("Wallet", style: TextStyle(
                     color: colors.whiteTemp,
                     fontWeight: FontWeight.w600

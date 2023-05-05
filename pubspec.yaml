@@ -51,6 +51,7 @@ dependencies:
 #  geolocator:
 #  ^7.7.0
   file_picker: ^4.0.0
+  carousel_slider: ^4.2.1
   shimmer: ^2.0.0
   geocoding:
 #  ^2.0.1

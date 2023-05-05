@@ -27,7 +27,7 @@ class _MyRestaurantsState extends State<MyRestaurants>
   Animation? buttonSqueezeanimation;
   AnimationController? buttonController;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      new GlobalKey<RefreshIndicatorState>();
+  new GlobalKey<RefreshIndicatorState>();
 
   getRestaurants() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -38,7 +38,7 @@ class _MyRestaurantsState extends State<MyRestaurants>
       'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
     };
     var request =
-        http.MultipartRequest('POST', Uri.parse(getRestroListApi.toString()));
+    http.MultipartRequest('POST', Uri.parse(getRestroListApi.toString()));
     request.fields.addAll({
       'user_type': gender.toString(),
       'lat' : lat.toString(),
@@ -114,13 +114,13 @@ class _MyRestaurantsState extends State<MyRestaurants>
                 _playAnimation();
 
                 Future.delayed(Duration(seconds: 2)).then(
-                  (_) async {
+                      (_) async {
                     _isNetworkAvail = await isNetworkAvailable();
                     if (_isNetworkAvail) {
                     } else {
                       await buttonController!.reverse();
                       setState(
-                        () {},
+                            () {},
                       );
                     }
                   },
@@ -136,11 +136,11 @@ class _MyRestaurantsState extends State<MyRestaurants>
   Future<Null> _refresh() async {
     Completer<Null> completer = new Completer<Null>();
     await Future.delayed(Duration(seconds: 3)).then(
-      (onvalue) {
+          (onvalue) {
         completer.complete();
         getRestaurants();
         setState(
-          () {
+              () {
             _isLoading = true;
           },
         );
@@ -152,30 +152,30 @@ class _MyRestaurantsState extends State<MyRestaurants>
   Widget bodyWidget() {
     return _isNetworkAvail
         ? _isLoading
-            ? shimmer(context)
-            : RefreshIndicator(
-                key: _refreshIndicatorKey,
-                onRefresh: _refresh,
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      children: [
-                        Text("Choose Restaurants", style: TextStyle(
-                          color: colors.primary, fontSize: 20, fontWeight: FontWeight.w600
-                        ),),
-                        const SizedBox(height: 10,),
-                        ListView.builder(
-                            physics: NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: restaurantList.length,
-                            itemBuilder: (context, index) {
-                              return restroCard(index);
-                            }),
-                      ],
-                    ),
-                  ),
-                ))
+        ? shimmer(context)
+        : RefreshIndicator(
+        key: _refreshIndicatorKey,
+        onRefresh: _refresh,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              children: [
+                Text("Choose Restaurants", style: TextStyle(
+                    color: colors.primary, fontSize: 20, fontWeight: FontWeight.w600
+                ),),
+                const SizedBox(height: 10,),
+                ListView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: restaurantList.length,
+                    itemBuilder: (context, index) {
+                      return restroCard(index);
+                    }),
+              ],
+            ),
+          ),
+        ))
         : noInternet(context);
   }
 
@@ -547,7 +547,7 @@ class _MyRestaurantsState extends State<MyRestaurants>
       onTap: (){
         Navigator.push(context, MaterialPageRoute(builder: (context) =>
             RestaurantDetails(id: restaurantList[index].id.toString(),
-            data: restaurantList[index],)));
+              data: restaurantList[index],)));
       },
       child: Card(
           shape: RoundedRectangleBorder(
@@ -556,51 +556,51 @@ class _MyRestaurantsState extends State<MyRestaurants>
           child: Row(
             // crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-            Padding(
-                padding: const EdgeInsets.all(10),
-                child: restaurantList[index].logo == null ||
+                Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: restaurantList[index].logo == null ||
                         restaurantList[index].logo ==
                             'https://developmentalphawizz.com/blind_date/'
-                    ? Container(
-                        padding: EdgeInsets.all(5),
+                        ? Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: colors.primary, width: 2)),
+                      child: Container(
+                        height: 80,
+                        width: 80,
                         decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: colors.primary, width: 2)),
-                        child: Container(
-                          height: 80,
-                          width: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                                image:
-                                    AssetImage('assets/images/placeholder.png'),
-                                fit: BoxFit.fitHeight),
-                            // borderRadius: BorderRadius.circular(15)
-                          ),
-                          // child: Image.network(restaurantList[index].image.toString(), width: 100, height: 100,)
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                              image:
+                              AssetImage('assets/images/placeholder.png'),
+                              fit: BoxFit.fitHeight),
+                          // borderRadius: BorderRadius.circular(15)
                         ),
-                      )
-                    : Container(
-                        padding: EdgeInsets.all(5),
+                        // child: Image.network(restaurantList[index].image.toString(), width: 100, height: 100,)
+                      ),
+                    )
+                        : Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: colors.primary, width: 2)),
+                      child: Container(
+                        height: 80,
+                        width: 80,
                         decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: colors.primary, width: 2)),
-                        child: Container(
-                          height: 80,
-                          width: 80,
-                          decoration: BoxDecoration(
-                            // border: Border.all(color: primary, width: 1),
-                            shape: BoxShape.circle,
-                            // borderRadius: BorderRadius.circular(12),
-                            image: DecorationImage(
-                                image: NetworkImage(
-                                    restaurantList[index].logo.toString()),
-                                fit: BoxFit.fill),
-                            // borderRadius: BorderRadius.circular(15)
-                          ),
-                          // child: Image.network(restaurantList[index].image.toString(), width: 100, height: 100,)
+                          // border: Border.all(color: primary, width: 1),
+                          shape: BoxShape.circle,
+                          // borderRadius: BorderRadius.circular(12),
+                          image: DecorationImage(
+                              image: NetworkImage(
+                                  restaurantList[index].logo.toString()),
+                              fit: BoxFit.fill),
+                          // borderRadius: BorderRadius.circular(15)
                         ),
-                      )),
+                        // child: Image.network(restaurantList[index].image.toString(), width: 100, height: 100,)
+                      ),
+                    )),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 30.0),
                   child: Column(
@@ -613,7 +613,7 @@ class _MyRestaurantsState extends State<MyRestaurants>
                         child: Text(restaurantList[index].storeName.toString(),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 2,
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,  color: Theme.of(context).colorScheme.fontColor)),
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,  color: colors.blackTemp)),
                       ),
                       const SizedBox(height: 5,),
                       Container(
@@ -631,7 +631,7 @@ class _MyRestaurantsState extends State<MyRestaurants>
                 Padding(
                   padding: const EdgeInsets.only(top: 60.0, right: 5),
                   child: Container(
-                     width: 40,
+                    width: 40,
                     padding: EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(40),
@@ -645,7 +645,7 @@ class _MyRestaurantsState extends State<MyRestaurants>
                   ),
                 )
 
-          ])),
+              ])),
     );
 
     //   Container(
@@ -1032,74 +1032,74 @@ class _MyRestaurantsState extends State<MyRestaurants>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // appBar: PreferredSize(
-        //   preferredSize: Size.fromHeight(80),
-        //   child: AppBar(
-        //     centerTitle: true,
-        //     title: Image.asset('assets/images/homelogo.png', height: 60,),
-        //     backgroundColor: colors.primary,
-        //     leading: IconButton(
-        //       onPressed: (){
-        //         Navigator.pop(context);
-        //       },
-        //       icon: Icon(Icons.arrow_back_ios, color: colors.whiteTemp,),
-        //     ),
-        //     actions: [
-        //       Padding(
-        //         padding: const EdgeInsets.all(8.0),
-        //         child: InkWell(
-        //           onTap: () async {
-        //             // var result = await Navigator.push(context, MaterialPageRoute(builder: (context)=> AddTable()));
-        //             // if(result != null){
-        //             //   getRestroTables();
-        //             // }
-        //           },
-        //           child: Container(
-        //             padding: EdgeInsets.all(8),
-        //             decoration: BoxDecoration(
-        //                 border: Border.all(color: colors.whiteTemp),
-        //                 borderRadius: BorderRadius.circular(30)
-        //             ),
-        //             child: Row(
-        //               mainAxisAlignment: MainAxisAlignment.center,
-        //               children: [
-        //                 Text("Add Table ", style: TextStyle(
-        //                     color: colors.whiteTemp,
-        //                     fontWeight: FontWeight.w600,
-        //                     fontSize: 16
-        //                 ),),
-        //                 Icon(Icons.add_box, color: colors.whiteTemp,)
-        //               ],
-        //             ),
-        //           ),
-        //         ),
-        //       ),
-        //
-        //       // SizedBox(
-        //       //   height: 30,
-        //       //   child: Container(
-        //       //     height: 30,
-        //       //     width: 100,
-        //       //     decoration: BoxDecoration(
-        //       //       color: Colors.colors.whiteTemp, borderRadius: BorderRadius.circular(20)
-        //       //     ),
-        //       //     child: Center(
-        //       //       child: Row(
-        //       //         mainAxisAlignment: MainAxisAlignment.center,
-        //       //         children: [
-        //       //           Text("Add Table", style: TextStyle(
-        //       //             color: primary
-        //       //           ),),
-        //       //           Icon(Icons.add_box, color: primary,)
-        //       //         ],
-        //       //       ),
-        //       //     ),
-        //       //   ),
-        //       // )
-        //
-        //     ],
-        //   ),
-        // ),
+      // appBar: PreferredSize(
+      //   preferredSize: Size.fromHeight(80),
+      //   child: AppBar(
+      //     centerTitle: true,
+      //     title: Image.asset('assets/images/homelogo.png', height: 60,),
+      //     backgroundColor: colors.primary,
+      //     leading: IconButton(
+      //       onPressed: (){
+      //         Navigator.pop(context);
+      //       },
+      //       icon: Icon(Icons.arrow_back_ios, color: colors.whiteTemp,),
+      //     ),
+      //     actions: [
+      //       Padding(
+      //         padding: const EdgeInsets.all(8.0),
+      //         child: InkWell(
+      //           onTap: () async {
+      //             // var result = await Navigator.push(context, MaterialPageRoute(builder: (context)=> AddTable()));
+      //             // if(result != null){
+      //             //   getRestroTables();
+      //             // }
+      //           },
+      //           child: Container(
+      //             padding: EdgeInsets.all(8),
+      //             decoration: BoxDecoration(
+      //                 border: Border.all(color: colors.whiteTemp),
+      //                 borderRadius: BorderRadius.circular(30)
+      //             ),
+      //             child: Row(
+      //               mainAxisAlignment: MainAxisAlignment.center,
+      //               children: [
+      //                 Text("Add Table ", style: TextStyle(
+      //                     color: colors.whiteTemp,
+      //                     fontWeight: FontWeight.w600,
+      //                     fontSize: 16
+      //                 ),),
+      //                 Icon(Icons.add_box, color: colors.whiteTemp,)
+      //               ],
+      //             ),
+      //           ),
+      //         ),
+      //       ),
+      //
+      //       // SizedBox(
+      //       //   height: 30,
+      //       //   child: Container(
+      //       //     height: 30,
+      //       //     width: 100,
+      //       //     decoration: BoxDecoration(
+      //       //       color: Colors.colors.whiteTemp, borderRadius: BorderRadius.circular(20)
+      //       //     ),
+      //       //     child: Center(
+      //       //       child: Row(
+      //       //         mainAxisAlignment: MainAxisAlignment.center,
+      //       //         children: [
+      //       //           Text("Add Table", style: TextStyle(
+      //       //             color: primary
+      //       //           ),),
+      //       //           Icon(Icons.add_box, color: primary,)
+      //       //         ],
+      //       //       ),
+      //       //     ),
+      //       //   ),
+      //       // )
+      //
+      //     ],
+      //   ),
+      // ),
         body: bodyWidget());
   }
 }

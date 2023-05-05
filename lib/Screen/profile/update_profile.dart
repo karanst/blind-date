@@ -24,6 +24,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UpdateCompleteProfile extends StatefulWidget {
   @override
@@ -90,14 +91,17 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
       if (index == 1) {
         setState(() {
           aadhaarFront = File(pickedFile.path);
+          adharFront =null;
         });
-      } else if (index == 2) {
+      } else if(index == 2){
         setState(() {
           aadhaarBack = File(pickedFile.path);
+          adharBack = null;
         });
-      } else {
+      }else if(index == 3){
         setState(() {
           profileImage = File(pickedFile.path);
+          imageProfile =null;
         });
       }
     }
@@ -121,17 +125,21 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
                     maxWidth: 240.0,
                   );
                   if (pickedFile != null) {
+
                     if (index == 1) {
                       setState(() {
                         aadhaarFront = File(pickedFile.path);
+                        adharFront =null;
                       });
                     } else if(index == 2){
                       setState(() {
                         aadhaarBack = File(pickedFile.path);
+                        adharBack = null;
                       });
-                    }else{
+                    }else if(index == 3){
                       setState(() {
                         profileImage = File(pickedFile.path);
+                        imageProfile =null;
                       });
                     }
                   }
@@ -170,10 +178,10 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
   }
 
   void validateAndSubmit() async {
-    if (validateAndSave()) {
+    // if (validateAndSave()) {
       _playAnimation();
       checkNetwork();
-    }
+    // }
   }
 
   getUserDetails() async {
@@ -194,20 +202,21 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
   Future<void> checkNetwork() async {
     bool avail = await isNetworkAvailable();
     if (avail) {
-      if (aadhaarFront != null) {
+      // if (aadhaarFront != null) {
         registerUser();
-      } else {
-        setSnackbar("Please select aadhaar image first");
-      }
-    } else {
-      Future.delayed(Duration(seconds: 2)).then((_) async {
-        if (mounted)
-          setState(() {
-            _isNetworkAvail = false;
-          });
-        await buttonController!.reverse();
-      });
+      // } else {
+      //   setSnackbar("Please select aadhaar image first");
+      // }
     }
+    // else {
+    //   Future.delayed(Duration(seconds: 2)).then((_) async {
+    //     if (mounted)
+    //       setState(() {
+    //         _isNetworkAvail = false;
+    //       });
+    //     await buttonController!.reverse();
+    //   });
+    // }
   }
 
   bool validateAndSave() {
@@ -339,6 +348,7 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
   }
 
   registerUser() async {
+    print('this is user request}');
     // CUR_USERID = await getPrefrence(Id);
     var headers = {
       'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
@@ -346,6 +356,7 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
     var request =
     http.MultipartRequest('POST', Uri.parse(updateSignUpApi.toString()));
     request.fields.addAll({
+      USER_ID: CUR_USERID.toString(),
       MOBILE: mobileController.text.toString(),
       NAME: nameController.text.toString(),
       EMAIL: emailController.text.toString(),
@@ -362,6 +373,10 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
       request.files.add(await http.MultipartFile.fromPath(
           'aadhar_card_back', aadhaarBack!.path));
     }
+    if (profileImage != null) {
+      request.files.add(await http.MultipartFile.fromPath(
+          'image', profileImage!.path));
+    }
 
     print(
         "this is signUp request ====>>>> ${request.fields.toString()} and ${request.files.toString()}");
@@ -375,6 +390,18 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
       String msg = result['message'];
       print("this is result response $error and $msg");
       if (!error) {
+        // setSnackbar(msg);
+        // username = i[USERNAME];
+        // email = i[EMAIL];
+        // mobile = i[MOBILE];
+        // city = i[CITY];
+        // area = i[AREA];
+        // address = i[ADDRESS];
+        // pincode = i[PINCODE];
+        // latitude = i[LATITUDE];
+        // longitude = i[LONGITUDE];
+        // image = i[IMAGE];
+        // gender=i['gender'];
         setSnackbar(msg);
         Navigator.pop(context);
 
@@ -390,6 +417,7 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
   Date? userData;
 
   getUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     // CUR_USERID = await getPrefrence(Id);
     var headers = {
       'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
@@ -419,6 +447,7 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
           if(userData!.username != null) {
             nameController =
                 TextEditingController(text: userData!.username.toString());
+
           }
           if(userData!.age != null) {
             ageController =
@@ -426,7 +455,7 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
           }
           if(userData!.mobile != null) {
             mobileController =
-                TextEditingController(text: userData!.username.toString());
+                TextEditingController(text: userData!.mobile.toString());
           }
           if(userData!.email != null) {
             emailController =
@@ -446,9 +475,12 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
             adharBack = userData!.aadharBack;
           }
           if(userData!.image != null) {
-            imageProfile = userData!.image;
+           setState(() {
+             imageProfile = userData!.image;
+           });
           }
           if (userData!.gender.toString() == "male" || userData!.gender.toString() == "Male") {
+            prefs.setString(GENDER, gender.toString());
             setState(() {
               _value3 = 1;
             });
@@ -1206,24 +1238,7 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
             title: Image.asset('assets/images/homelogo.png', height: 60,),
             backgroundColor: colors.primary,
             iconTheme: IconThemeData(color: colors.whiteTemp),
-            // actions: [
-            //   InkWell(
-            //     onTap: (){
-            //      // Navigator.push(context, MaterialPageRoute(builder: (context)=> WalletHistory()));
-            //     },
-            //     child: Padding(
-            //       padding: const EdgeInsets.only(right: 25.0, top: 4),
-            //       child: Column(
-            //         children: [
-            //           Icon(Icons.wallet, color: colors.whiteTemp, size: 34,),
-            //           Text("Wallet", style: TextStyle(
-            //               color: colors.whiteTemp,
-            //               fontWeight: FontWeight.w600
-            //           ),)
-            //         ],
-            //       ),
-            //     ),
-            //   )],
+
           ),
         ),
         resizeToAvoidBottomInset: true,
@@ -1251,93 +1266,111 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
                         _selectImage(context, 3);
                       },
                       child: Container(
-                          child: imageProfile == null || imageProfile.toString() == ''?
-                          profileImage == null
-                              ? Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                  color: colors.primary),
-                              shape: BoxShape.circle,
-                              // borderRadius:
-                              // BorderRadius.circular(15),
-                              // image: DecorationImage(
-                              //     image: FileImage(File(aadhaarImage!.path)),
-                              //     fit: BoxFit.fill
-                              //   //AssetImage(Image.file(file)File(tableImage!.path)),
-                              // )
-                            ),
-                            width: MediaQuery.of(context)
-                                .size
-                                .width /
-                                2 -
-                                20,
-                            height: MediaQuery.of(context)
-                                .size
-                                .width /
-                                2 -
-                                20,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment:
-                                MainAxisAlignment.center,
-                                crossAxisAlignment:
-                                CrossAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.upload_file_outlined,
-                                    size: 32,
+                          child: Stack(
+                            children: [
+                              imageProfile == null || imageProfile.toString() == ''?
+                              profileImage == null
+                                  ? Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: colors.primary),
+                                  shape: BoxShape.circle,
+                                  // borderRadius:
+                                  // BorderRadius.circular(15),
+                                  // image: DecorationImage(
+                                  //     image: FileImage(File(aadhaarImage!.path)),
+                                  //     fit: BoxFit.fill
+                                  //   //AssetImage(Image.file(file)File(tableImage!.path)),
+                                  // )
+                                ),
+                                width: MediaQuery.of(context)
+                                    .size
+                                    .width /
+                                    2 -
+                                    50,
+                                height: MediaQuery.of(context)
+                                    .size
+                                    .width /
+                                    2 -
+                                    50,
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.upload_file_outlined,
+                                        size: 32,
+                                      ),
+                                      Text('Profile Image')
+                                    ],
                                   ),
-                                  Text('Profile Image')
-                                ],
+                                ),
+                              )
+                                  : Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: colors.primary),
+                                    shape: BoxShape.circle,
+                                    // borderRadius:
+                                    // BorderRadius.circular(15),
+                                    image: DecorationImage(
+                                        image: FileImage(File(
+                                            profileImage!.path)),
+                                        fit: BoxFit.fill
+                                      //AssetImage(Image.file(file)File(tableImage!.path)),
+                                    )),
+                                width: MediaQuery.of(context)
+                                    .size
+                                    .width /
+                                    2 -
+                                    50,
+                                height: MediaQuery.of(context)
+                                    .size
+                                    .width /
+                                    2 -
+                                    50,
+                              )
+                                  : Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: colors.primary),
+                                    shape: BoxShape.circle,
+                                    // borderRadius:
+                                    // BorderRadius.circular(15),
+                                    image: DecorationImage(
+                                        image: NetworkImage(adharBack.toString()),
+                                        fit: BoxFit.fill
+                                      //AssetImage(Image.file(file)File(tableImage!.path)),
+                                    )),
+                                width: MediaQuery.of(context)
+                                    .size
+                                    .width /
+                                    2 -
+                                    50,
+                                height: MediaQuery.of(context)
+                                    .size
+                                    .width /
+                                    2 -
+                                    50,
                               ),
-                            ),
-                          )
-                              : Container(
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: colors.primary),
-                                shape: BoxShape.circle,
-                                // borderRadius:
-                                // BorderRadius.circular(15),
-                                image: DecorationImage(
-                                    image: FileImage(File(
-                                        profileImage!.path)),
-                                    fit: BoxFit.fill
-                                  //AssetImage(Image.file(file)File(tableImage!.path)),
-                                )),
-                            width: MediaQuery.of(context)
-                                .size
-                                .width /
-                                2 -
-                                20,
-                            height: MediaQuery.of(context)
-                                .size
-                                .width /
-                                2 -
-                                20,
-                          )
-                              : Container(
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: colors.primary),
-                                shape: BoxShape.circle,
-                                // borderRadius:
-                                // BorderRadius.circular(15),
-                                image: DecorationImage(
-                                    image: NetworkImage(adharBack.toString()),
-                                    fit: BoxFit.fill
-                                  //AssetImage(Image.file(file)File(tableImage!.path)),
-                                )),
-                            width: MediaQuery.of(context)
-                                .size
-                                .width /
-                                2 -
-                                20,
-                            height: MediaQuery.of(context)
-                                .size
-                                .width /
-                                2 -
-                                20,
+                              Positioned(
+                                bottom: 5,
+                                right: 12,
+                                child: Container(
+                                  width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: colors.primary
+                                    ),
+                                    child: IconButton(onPressed: (){
+                                      _selectImage(context, 3);
+                                    }, icon: Icon(Icons.edit, color: colors.whiteTemp, size: 16,))),
+                              )
+                            ],
                           )
 
                       ),

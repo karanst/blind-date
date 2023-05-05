@@ -118,7 +118,7 @@ class SettingProvider {
     waitList.add(_sharedPreferences.setString(USERNAME, name ?? ""));
     waitList.add(_sharedPreferences.setString(EMAIL, email ?? ""));
     waitList.add(_sharedPreferences.setString(MOBILE, mobile ?? ""));
-    waitList.add(_sharedPreferences.setString('gender', gender ?? ""));
+    waitList.add(_sharedPreferences.setString(GENDER, gender ?? ""));
     waitList.add(_sharedPreferences.setString(CITY, city ?? ""));
     waitList.add(_sharedPreferences.setString(AREA, area ?? ""));
     waitList.add(_sharedPreferences.setString(ADDRESS, address ?? ""));

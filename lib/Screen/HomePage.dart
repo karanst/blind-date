@@ -4,7 +4,9 @@ import 'dart:io';
 import 'dart:math';
 import 'package:blind_date/Model/category_model.dart';
 import 'package:blind_date/Model/my_bookings_model.dart';
+import 'package:blind_date/Model/restaurant_model.dart';
 import 'package:blind_date/Screen/My_Wallet.dart';
+import 'package:blind_date/Screen/NewScreens/restaurant_details.dart';
 import 'package:blind_date/Screen/SendOtp.dart';
 import 'package:blind_date/Screen/my_leads_accounts.dart';
 import 'package:blind_date/Screen/refer_form.dart';
@@ -27,6 +29,8 @@ import 'package:blind_date/Provider/UserProvider.dart';
 import 'package:blind_date/Screen/SellerList.dart';
 import 'package:blind_date/Screen/Seller_Details.dart';
 import 'package:blind_date/Screen/SubCategory.dart';
+import 'package:carousel_slider/carousel_options.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart';
@@ -36,6 +40,7 @@ import 'package:google_maps_place_picker_mb/google_maps_place_picker.dart';
 import 'package:http/http.dart';
 import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
@@ -90,8 +95,11 @@ class _HomePageState extends State<HomePage>
   Position? currentLocation;
   double? lat, long;
   String? currentAddress;
+  List<Restaurants> restaurantList = [];
+  int currentindex = 0;
 
   Future getUserCurrentLocation() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     permission = await Geolocator.requestPermission();
     await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
         .then((position) {
@@ -101,6 +109,9 @@ class _HomePageState extends State<HomePage>
           lat = currentLocation!.latitude;
           long = currentLocation!.longitude;
         });
+      prefs.setDouble(LATITUDE, lat!);
+      prefs.setDouble(LONGITUDE, long!);
+
     });
     print("LOCATION===" + currentLocation.toString());
   }
@@ -149,6 +160,45 @@ class _HomePageState extends State<HomePage>
     }
   }
 
+  String? gender;
+
+  getUserData() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+     lat = prefs.getDouble(LATITUDE);
+     long = prefs.getDouble(LONGITUDE);
+     gender = prefs.getString(GENDER);
+  }
+  getRestaurants() async {
+
+    var headers = {
+      'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
+    };
+    var request =
+    http.MultipartRequest('POST', Uri.parse(getRestroListApi.toString()));
+    request.fields.addAll({
+      'user_type': gender.toString(),
+      'lat' : lat.toString(),
+      'lng': long.toString()
+    });
+
+    print("this is restro request ${request.fields.toString()}");
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      String str = await response.stream.bytesToString();
+      var result = json.decode(str);
+      var finalResponse = RestaurantModel.fromJson(result);
+      setState(() {
+        restaurantList = finalResponse.data!;
+        // _isLoading = false;
+      });
+      print("this is referral data ${restaurantList.length}");
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
+
 
   List<Bookings> bookingList = [];
   getMyBookings() async {
@@ -181,9 +231,14 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
+    getUserData();
     getUserCurrentLocation();
     getCurrentAddress();
-    getMyBookings();
+
+    Future.delayed(Duration(seconds: 1), (){
+      getRestaurants();
+      getMyBookings();
+    });
     callApi();
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
@@ -424,7 +479,487 @@ class _HomePageState extends State<HomePage>
             ),
           )),
     );
+  }
 
+  Widget restroCard(int index) {
+    return InkWell(
+      onTap: (){
+        Navigator.push(context, MaterialPageRoute(builder: (context) =>
+            RestaurantDetails(id: restaurantList[index].id.toString(),
+              data: restaurantList[index],)));
+      },
+      child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Row(
+            // crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: restaurantList[index].logo == null ||
+                        restaurantList[index].logo ==
+                            'https://developmentalphawizz.com/blind_date/'
+                        ? Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: colors.primary, width: 2)),
+                      child: Container(
+                        height: 80,
+                        width: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                              image:
+                              AssetImage('assets/images/placeholder.png'),
+                              fit: BoxFit.fitHeight),
+                          // borderRadius: BorderRadius.circular(15)
+                        ),
+                        // child: Image.network(restaurantList[index].image.toString(), width: 100, height: 100,)
+                      ),
+                    )
+                        : Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: colors.primary, width: 2)),
+                      child: Container(
+                        height: 80,
+                        width: 80,
+                        decoration: BoxDecoration(
+                          // border: Border.all(color: primary, width: 1),
+                          shape: BoxShape.circle,
+                          // borderRadius: BorderRadius.circular(12),
+                          image: DecorationImage(
+                              image: NetworkImage(
+                                  restaurantList[index].logo.toString()),
+                              fit: BoxFit.fill),
+                          // borderRadius: BorderRadius.circular(15)
+                        ),
+                        // child: Image.network(restaurantList[index].image.toString(), width: 100, height: 100,)
+                      ),
+                    )),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 30.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: MediaQuery.of(context).size.width/2-20,
+                        child: Text(restaurantList[index].storeName.toString(),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,  color: Theme.of(context).colorScheme.fontColor)),
+                      ),
+                      const SizedBox(height: 5,),
+                      Container(
+                        width: MediaQuery.of(context).size.width/2-20,
+                        child: Text(restaurantList[index].address.toString(),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                      ),
+
+
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 60.0, right: 5),
+                  child: Container(
+                    width: 40,
+                    padding: EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(40),
+                        color: colors.primary
+                    ),
+                    child: Center(
+                      child: Text(restaurantList[index].noOfRatings.toString(), style: TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 14, color: colors.whiteTemp
+                      ),),
+                    ),
+                  ),
+                )
+
+              ])),
+    );
+
+    //   Container(
+    //   // height: 160,
+    //   child: Stack(
+    //     children: [
+    //       // Positioned(
+    //       // left: 40,
+    //       // top: 30,
+    //       // child:
+    //       Card(
+    //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    //         child: Container(
+    //           // height: 280,
+    //           width: MediaQuery.of(context).size.width ,
+    //           decoration: BoxDecoration(
+    //               borderRadius: BorderRadius.circular(15),
+    //               color: colors.whiteTemp,
+    //               border: Border.all(color: colors.primary, width: 1)
+    //           ),
+    //           child: Column(
+    //             mainAxisSize: MainAxisSize.min,
+    //             children: [
+    //               Container(
+    //                 padding: EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8),
+    //                 child:  Row(
+    //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //                   children: [
+    //                     Text(restaurantList[index].storeName.toString(),
+    //                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600,  color: colors.whiteTemp)),
+    //                     Row(
+    //                       mainAxisAlignment: MainAxisAlignment.center,
+    //                       children: [
+    //                         IconButton(
+    //                             onPressed: (){
+    //                               // Navigator.push(context, MaterialPageRoute(builder: (context)=> EditTable(
+    //                               //     data: restaurantList[index]
+    //                               // )));
+    //                             }, icon: Icon(Icons.edit, color: colors.whiteTemp)),
+    //                         IconButton(onPressed: (){
+    //                           showDialog(
+    //                               context: context,
+    //                               barrierDismissible: false,
+    //                               builder: (BuildContext context) {
+    //                                 return AlertDialog(
+    //                                   title: Text("Confirm Delete"),
+    //                                   content: Text("Are you sure you want to Delete?"),
+    //                                   actions: <Widget>[
+    //                                     ElevatedButton(
+    //                                       style: ElevatedButton.styleFrom(primary: colors.primary),
+    //                                       child: Text("YES", style: TextStyle(color: colors.whiteTemp),),
+    //                                       onPressed: () {
+    //
+    //                                         Navigator.pop(context);
+    //                                       },
+    //                                     ),
+    //                                     ElevatedButton(
+    //                                       style: ElevatedButton.styleFrom(primary: colors.primary),
+    //                                       child: Text("NO", style: TextStyle(color: colors.whiteTemp),),
+    //                                       onPressed: () {
+    //                                         Navigator.pop(context);
+    //                                       },
+    //                                     )
+    //                                   ],
+    //                                 );
+    //                               });
+    //                         }, icon: Icon(Icons.delete_forever, color: colors.whiteTemp))
+    //                       ],
+    //                     )
+    //                   ],
+    //                 ),
+    //                 decoration: BoxDecoration(
+    //                     color: colors.primary,
+    //                     borderRadius: BorderRadius.only(topRight: Radius.circular(13), topLeft: Radius.circular(13))
+    //                 ),
+    //               ),
+    //               Padding(
+    //                 padding: const EdgeInsets.only(left: 10.0, right: 10, top: 10),
+    //                 child: Row(
+    //                   mainAxisAlignment: MainAxisAlignment.start,
+    //                   crossAxisAlignment: CrossAxisAlignment.center,
+    //                   children: [
+    //                     restaurantList[index].logo == null || restaurantList[index].logo =='https://developmentalphawizz.com/blind_date/' ?
+    //                     Container(
+    //                       height: 100,
+    //                       width: 100,
+    //                       decoration: BoxDecoration(
+    //                         shape: BoxShape.circle,
+    //                         image: DecorationImage(
+    //                             image:  AssetImage('assets/images/placeholder.png'),
+    //                             fit: BoxFit.fitHeight
+    //                         ),
+    //                         // borderRadius: BorderRadius.circular(15)
+    //                       ),
+    //                       // child: Image.network(restaurantList[index].image.toString(), width: 100, height: 100,)
+    //                     )
+    //                         : Container(
+    //                       height: 100,
+    //                       width: 100,
+    //                       decoration: BoxDecoration(
+    //                         // border: Border.all(color: primary, width: 1),
+    //                         // shape: BoxShape.circle,
+    //                         borderRadius: BorderRadius.circular(12),
+    //                         image: DecorationImage(
+    //                             image: NetworkImage(restaurantList[index].logo.toString()),
+    //                             fit: BoxFit.fill
+    //                         ),
+    //                         // borderRadius: BorderRadius.circular(15)
+    //                       ),
+    //                       // child: Image.network(restaurantList[index].image.toString(), width: 100, height: 100,)
+    //                     ),
+    //                     const SizedBox(width: 15,),
+    //                     Column(
+    //                       crossAxisAlignment: CrossAxisAlignment.start,
+    //                       children: [
+    //
+    //                         Padding(
+    //                           padding: const EdgeInsets.only(bottom: 5),
+    //                           child: Row(
+    //                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //                             children: [
+    //                               Text("Booking Amount : ", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
+    //                                   color: Theme.of(context).colorScheme.fontColor),),
+    //                               Text("₹ ${restaurantList[index].address.toString()}",
+    //                                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary) ),
+    //                             ],
+    //                           ),
+    //                         ),
+    //                         Row(
+    //                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //                           children: [
+    //                             Text("Total Tables : ", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color:  Theme.of(context).colorScheme.fontColor),),
+    //                             Text("${restaurantList[index].bookingDate.toString()}",
+    //                                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary) ),
+    //                           ],
+    //                         ),
+    //                         Padding(
+    //                           padding: const EdgeInsets.only(top: 5.0),
+    //                           child: Row(
+    //                             crossAxisAlignment: CrossAxisAlignment.start,
+    //                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //                             children: [
+    //                               Text("Benefits : ", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color:  Theme.of(context).colorScheme.fontColor),),
+    //                               Container(
+    //                                 width: MediaQuery.of(context).size.width/2 -50,
+    //                                 child: Text("${restaurantList[index].bookingTime.toString()}",
+    //                                     maxLines: 2,
+    //                                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary) ),
+    //                               ),
+    //                             ],
+    //                           ),
+    //                         ),
+    //                       ],
+    //                     ),
+    //                   ],
+    //                 ),
+    //               ),
+    //
+    //
+    //               const SizedBox(height: 10,),
+    //               // Container(
+    //               //   width: MediaQuery.of(context).size.width,
+    //               //   padding: EdgeInsets.all(10),
+    //               //   decoration: BoxDecoration(
+    //               //       color: primary,
+    //               //       borderRadius: BorderRadius.only(bottomLeft: Radius.circular(13), bottomRight: Radius.circular(13))
+    //               //   ),
+    //               //   // child: Row(
+    //               //   //   mainAxisAlignment: MainAxisAlignment.end,
+    //               //   //   children: [
+    //               //   //     Padding(
+    //               //   //       padding: const EdgeInsets.only(right: 10.0),
+    //               //   //       child: Container(
+    //               //   //         padding: EdgeInsets.all(4),
+    //               //   //         decoration: BoxDecoration(
+    //               //   //             color: colors.whiteTemp,
+    //               //   //             borderRadius: BorderRadius.circular(8)
+    //               //   //         ),
+    //               //   //         child: Text("",
+    //               //   //           style: TextStyle(
+    //               //   //               color: primary,
+    //               //   //               fontWeight: FontWeight.w600,
+    //               //   //               fontSize: 16
+    //               //   //           ),),
+    //               //   //       ),
+    //               //   //     ),
+    //               //   //   ],
+    //               //   // ),
+    //               //   // child:
+    //               //   // bookingList[index].bookingStatus.toString() == "1" ?
+    //               //   // Row(
+    //               //   //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    //               //   //   children: [
+    //               //   //     ElevatedButton(
+    //               //   //       onPressed: (){
+    //               //   //       // showInformationDialog(context, index, bookingList[index]);
+    //               //   //     }, child: Text("Accept", style: TextStyle(color: primary, fontSize: 16, fontWeight: FontWeight.w600),),
+    //               //   //       style: ElevatedButton.styleFrom(
+    //               //   //           fixedSize: Size(MediaQuery.of(context).size.width/2 - 60, 35),
+    //               //   //           primary: colors.whiteTemp, shape: RoundedRectangleBorder(
+    //               //   //         borderRadius: BorderRadius.circular(10),
+    //               //   //
+    //               //   //       )),
+    //               //   //     ),
+    //               //   //     ElevatedButton(
+    //               //   //       onPressed: (){
+    //               //   //         // showInformationDialog(context, index, bookingList[index]);
+    //               //   //       }, child: Text("Reject", style: TextStyle(color: primary, fontSize: 16, fontWeight: FontWeight.w600),),
+    //               //   //       style: ElevatedButton.styleFrom(
+    //               //   //           fixedSize: Size(MediaQuery.of(context).size.width/2 - 60, 35),
+    //               //   //           primary: colors.whiteTemp, shape: RoundedRectangleBorder(
+    //               //   //         borderRadius: BorderRadius.circular(10),
+    //               //   //
+    //               //   //       )),
+    //               //   //     ),
+    //               //   //   ],
+    //               //   // )
+    //               //   // : SizedBox.shrink(),
+    //               // ),
+    //
+    //               // Spacer(),
+    //               // Divider(
+    //               //   thickness: 2,
+    //               //   color: secondary,
+    //               // ),
+    //               // Expanded(
+    //               //   child: Padding(
+    //               //     padding: const EdgeInsets.only(right: 8.0),
+    //               //     child: DropdownButtonFormField(
+    //               //       dropdownColor: colors.whiteTemp,
+    //               //       isDense: true,
+    //               //       iconEnabledColor: primary,
+    //               //       hint: Text(
+    //               //         getTranslated(context, "UpdateStatus")!,
+    //               //         style: Theme.of(this.context)
+    //               //             .textTheme
+    //               //             .subtitle2!
+    //               //             .copyWith(
+    //               //             color: primary,
+    //               //             fontWeight: FontWeight.bold),
+    //               //       ),
+    //               //       decoration: InputDecoration(
+    //               //         filled: true,
+    //               //         isDense: true,
+    //               //         fillColor: colors.whiteTemp,
+    //               //         contentPadding: EdgeInsets.symmetric(
+    //               //             vertical: 10, horizontal: 10),
+    //               //         enabledBorder: OutlineInputBorder(
+    //               //           borderSide: BorderSide(color: primary),
+    //               //         ),
+    //               //       ),
+    //               //       value: orderItem.status,
+    //               //       onChanged: (dynamic newValue) {
+    //               //         setState(
+    //               //               () {
+    //               //             orderItem.curSelected = newValue;
+    //               //             updateOrder(
+    //               //               orderItem.curSelected,
+    //               //               updateOrderItemApi,
+    //               //               model.id,
+    //               //               true,
+    //               //               i,
+    //               //             );
+    //               //           },
+    //               //         );
+    //               //       },
+    //               //       items: statusList.map(
+    //               //             (String st) {
+    //               //           return DropdownMenuItem<String>(
+    //               //             value: st,
+    //               //             child: Text(
+    //               //               capitalize(st),
+    //               //               style: Theme.of(this.context)
+    //               //                   .textTheme
+    //               //                   .subtitle2!
+    //               //                   .copyWith(
+    //               //                   color: primary,
+    //               //                   fontWeight:
+    //               //                   FontWeight.bold),
+    //               //             ),
+    //               //           );
+    //               //         },
+    //               //       ).toList(),
+    //               //     ),
+    //               //   ),
+    //               // ),
+    //               // statusUpdateWidget(index, bookingList[index]),
+    //               // ElevatedButton(onPressed: (){
+    //               //   // showInformationDialog(context, index, bookingList[index]);
+    //               // }, child: Text("Change Status", style: TextStyle(color: Colors.colors.whiteTemp, fontSize: 16, fontWeight: FontWeight.w600),),
+    //               //   style: ElevatedButton.styleFrom(
+    //               //       fixedSize: Size(MediaQuery.of(context).size.width - 60, 50),
+    //               //       primary: primary, shape: RoundedRectangleBorder(
+    //               //     borderRadius: BorderRadius.circular(10),
+    //               //
+    //               //   )),
+    //               // )
+    //               // Container(
+    //               //   width: MediaQuery.of(context).size.width,
+    //               //   height: 60,
+    //               //   child: Row(
+    //               //     children: [
+    //               //       Container(
+    //               //         width: MediaQuery.of(context).size.width/2,
+    //               //         height: 60,
+    //               //         child: DropdownButton(
+    //               //           hint: Text('Select Status'), // Not necessary for Option 1
+    //               //           value: categoryValue,
+    //               //           onChanged: (String? newValue) {
+    //               //             setState(() {
+    //               //               categoryValue = newValue;
+    //               //             });
+    //               //           },
+    //               //           items: leadStatus.map((item) {
+    //               //             return DropdownMenuItem(
+    //               //               child:  Text(item),
+    //               //               value: item,
+    //               //             );
+    //               //           }).toList(),
+    //               //         ),
+    //               //       ),
+    //               //       // Container(
+    //               //       //     padding: EdgeInsets.all(8),
+    //               //       //     decoration: BoxDecoration(
+    //               //       //         color: secondary,
+    //               //       //         borderRadius: BorderRadius.circular(10)
+    //               //       //     ),
+    //               //       //     child: Center(child: Text(bookingList[index].status.toString(), style: TextStyle(fontSize: 14,
+    //               //       //         color: Colors.colors.whiteTemp,
+    //               //       //         fontWeight: FontWeight.w600)))),
+    //               //     ],
+    //               //   ),
+    //               // ),
+    //             ],
+    //           ),
+    //         ),
+    //       ),
+    //       // ),
+    //       // Card(
+    //       //   elevation: 4,
+    //       //   shape: RoundedRectangleBorder(
+    //       //       borderRadius: BorderRadius.circular(100)
+    //       //   ),
+    //       //   child:  tablesList[index].image != null || tablesList[index].image !='' ?
+    //       //   Container(
+    //       //     height: 100,
+    //       //     width: 100,
+    //       //     decoration: BoxDecoration(
+    //       //       // border: Border.all(color: primary, width: 1),
+    //       //       shape: BoxShape.circle,
+    //       //       image: DecorationImage(
+    //       //           image: NetworkImage(tablesList[index].image.toString()),
+    //       //           fit: BoxFit.fill
+    //       //       ),
+    //       //       // borderRadius: BorderRadius.circular(15)
+    //       //     ),
+    //       //     // child: Image.network(tablesList[index].image.toString(), width: 100, height: 100,)
+    //       //   )
+    //       //       : Container(
+    //       //     height: 100,
+    //       //     width: 100,
+    //       //     decoration: BoxDecoration(
+    //       //       shape: BoxShape.circle,
+    //       //       image: DecorationImage(
+    //       //           image:  AssetImage('assets/images/placeholder.png'),
+    //       //           fit: BoxFit.fill
+    //       //       ),
+    //       //       // borderRadius: BorderRadius.circular(15)
+    //       //     ),
+    //       //     // child: Image.network(tablesList[index].image.toString(), width: 100, height: 100,)
+    //       //   ),
+    //       // )
+    //     ],
+    //   ),
+    // );
   }
 
   @override
@@ -512,7 +1047,7 @@ class _HomePageState extends State<HomePage>
                               padding: EdgeInsets.only(left: 15, top: 4, bottom: 4, right: 8),
                               height: 40,
                               decoration: BoxDecoration(
-                                  color: colors.whiteTemp,
+                                  color: Theme.of(context).colorScheme.lightWhite,
                                   borderRadius: BorderRadius.circular(50),
                                   border: Border.all(color: colors.primary)),
                               width: MediaQuery.of(context).size.width,
@@ -541,34 +1076,68 @@ class _HomePageState extends State<HomePage>
                       // _deliverPincode(),
                       // _catList(),
                       // _firstHeader(),
+                      const SizedBox(height: 10,),
                       _slider(),
+                      bookingList.isNotEmpty ?
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 15.0, bottom: 5),
+                            child: Text('My Bookings', style: TextStyle(
+                                color: colors.primary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16
+                            ),),
+                          ),
+
+                          // bookingList.isNotEmpty ?
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10, right: 10.0),
+                            child: ListView.builder(
+                                physics: NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: bookingList.length,
+                                itemBuilder: (context, index) {
+                                  return bookingCard(index);
+                                  //restroCard(index);
+                                }),
+                          )
+                          //     : Container(
+                          //   height: MediaQuery.of(context).size.width,
+                          //   child: Center(
+                          //     child: Text(" No bookings found!"),
+                          //   ),
+                          // ),
+                        ],
+                      )
+                          : SizedBox.shrink(),
                       Padding(
-                        padding: const EdgeInsets.only(left: 15.0, bottom: 5),
-                        child: Text('My Bookings', style: TextStyle(
-                          color: colors.primary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16
+                        padding: const EdgeInsets.only(left: 15.0, bottom: 5, top: 10),
+                        child: Text('Nearby Restaurants', style: TextStyle(
+                            color: colors.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16
                         ),),
                       ),
-
-                      bookingList.isNotEmpty ?
+                      restaurantList.isNotEmpty ?
                       Padding(
-                        padding: const EdgeInsets.only(left: 10, right: 10.0),
+                        padding: const EdgeInsets.only(left: 10.0, right: 10),
                         child: ListView.builder(
                             physics: NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
-                            itemCount: bookingList.length,
+                            itemCount: restaurantList.length > 4 ? 4 : restaurantList.length,
                             itemBuilder: (context, index) {
-                              return bookingCard(index);
-                              //restroCard(index);
+                              return restroCard(index);
                             }),
                       )
-                      : Container(
-                        height: MediaQuery.of(context).size.width,
-                        child: Center(
-                          child: Text(" No bookings found!"),
-                        ),
-                      ),
+                        : Container(
+                  height: MediaQuery.of(context).size.width,
+        child: Center(
+          child: Text(" No nearby restaurants found!"),
+        ),
+      ),
+
                       // _catList(),
                       // Container(
                       //   margin: EdgeInsets.all(12),
@@ -638,61 +1207,195 @@ class _HomePageState extends State<HomePage>
       builder: (context, data, child) {
         return data
             ? sliderLoading()
-            : Stack(
-          alignment: Alignment.bottomCenter,
-                children: [
-                  Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20)
-                    ),
-                    width: double.infinity,
-                    // margin: EdgeInsetsDirectional.only(top: 10),
-                    child: PageView.builder(
-                      itemCount: homeSliderList.length,
-                      scrollDirection: Axis.horizontal,
-                      controller: _controller,
-                      physics: AlwaysScrollableScrollPhysics(),
-                      onPageChanged: (index) {
-                        context.read<HomeProvider>().setCurSlider(index);
-                      },
-                      itemBuilder: (BuildContext context, int index) {
-                        return pages[index];
-                      },
-                    ),
+            : ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: Column(
+            children: [
+              Container(
+                height: height,
+                width: double.infinity,
+                child: CarouselSlider(
+                  options: CarouselOptions(
+                    viewportFraction: 0.8,
+                    initialPage: 0,
+                    enableInfiniteScroll: true,
+                    reverse: false,
+                    autoPlay: true,
+                    autoPlayInterval: Duration(seconds: 3),
+                    autoPlayAnimationDuration:
+                    Duration(milliseconds: 1200),
+                    autoPlayCurve: Curves.fastOutSlowIn,
+                    enlargeCenterPage: true,
+                    scrollDirection: Axis.horizontal,
+                    height: height,
+                    onPageChanged: (position, reason) {
+                      setState(() {
+                        currentindex = position;
+                      });
+                      print(reason);
+                      print(CarouselPageChangedReason.controller);
+                    },
                   ),
-                  Positioned(
-                    bottom: 20,
-                    width: deviceWidth,
-                    left: 0,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: map<Widget>(
-                        homeSliderList,
-                        (index, url) {
-                          return Container(
-                              width: 8.0,
-                              height: 8.0,
-                              margin: EdgeInsets.symmetric(
-                                  vertical: 10.0, horizontal: 2.0),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: context.read<HomeProvider>().curSlider ==
-                                        index
-                                    ? Theme.of(context).colorScheme.fontColor
-                                    : Theme.of(context).colorScheme.lightBlack,
-                              ));
-                        },
+                  items: homeSliderList.map((val) {
+                    return InkWell(
+                      onTap: () {
+                        // if (homeSliderList[currentindex].type ==
+                        //     "restaurants") {
+                        //   print(homeSliderList[currentindex].list);
+                        //   if (homeSliderList[currentindex].list!=null) {
+                        //     var item =
+                        //         homeSliderList[currentindex].list;
+                        //     // Navigator.push(
+                        //     //     context,
+                        //     //     MaterialPageRoute(
+                        //     //         builder: (context) => SellerProfile(
+                        //     //           title: item.store_name.toString(),
+                        //     //           sellerID: item.seller_id.toString(),
+                        //     //           sellerId: item.seller_id.toString(),
+                        //     //           sellerData: item,
+                        //     //           userLocation: currentAddress.text,
+                        //     //           // catId: widget.catId,
+                        //     //           shop: false,
+                        //     //         )));
+                        //     /*Navigator.push(
+                        //             context,
+                        //             PageRouteBuilder(
+                        //                 pageBuilder: (_, __, ___) =>
+                        //                     ProductDetail(
+                        //                         model: item,
+                        //                         secPos: 0,
+                        //                         index: 0,
+                        //                         list: true)),
+                        //           );*/
+                        //   }
+                        // } else if (homeSliderList[currentindex].type ==
+                        //     "categories") {
+                        //   var item = homeSliderList[currentindex].list;
+                        //   Navigator.push(
+                        //       context,
+                        //       MaterialPageRoute(
+                        //           builder: (context) => SellerList(
+                        //             catId: item.categoryId,
+                        //             catName: item.name,
+                        //             userLocation:
+                        //             currentAddress.text,
+                        //             getByLocation: true,
+                        //           )));
+                        // }
+                      },
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              "${val.image}",
+                              fit: BoxFit.fill,
+                            )),
                       ),
-                    ),
-                  ),
-                ],
-              );
+                    );
+                  }).toList(),
+                ),
+                // margin: EdgeInsetsDirectional.only(top: 10),
+                // child: PageView.builder(
+                //   itemCount: homeSliderList.length,
+                //   scrollDirection: Axis.horizontal,
+                //   controller: _controller,
+                //   pageSnapping: true,
+                //   physics: AlwaysScrollableScrollPhysics(),
+                //   onPageChanged: (index) {
+                //     context.read<HomeProvider>().setCurSlider(index);
+                //   },
+                //   itemBuilder: (BuildContext context, int index) {
+                //     return pages[index];
+                //   },
+                // ),
+              ),
+              Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: homeSliderList.map((e) {
+                    int index = homeSliderList.indexOf(e);
+                    return Container(
+                        width: 8.0,
+                        height: 8.0,
+                        margin: EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 2.0),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: currentindex == index
+                              ? Theme.of(context).colorScheme.fontColor
+                              : Theme.of(context).colorScheme.lightBlack,
+                        ));
+                  }).toList()),
+            ],
+          ),
+        );
       },
       selector: (_, homeProvider) => homeProvider.sliderLoading,
     );
   }
+  // Widget _slider() {
+  //   double height = deviceWidth! / 2.2;
+  //
+  //   return Selector<HomeProvider, bool>(
+  //     builder: (context, data, child) {
+  //       return data
+  //           ? sliderLoading()
+  //           : Stack(
+  //         alignment: Alignment.bottomCenter,
+  //               children: [
+  //                 Container(
+  //                   height: 200,
+  //                   decoration: BoxDecoration(
+  //                     borderRadius: BorderRadius.circular(20)
+  //                   ),
+  //                   width: double.infinity,
+  //                   // margin: EdgeInsetsDirectional.only(top: 10),
+  //                   child: PageView.builder(
+  //                     itemCount: homeSliderList.length,
+  //                     scrollDirection: Axis.horizontal,
+  //                     controller: _controller,
+  //                     physics: AlwaysScrollableScrollPhysics(),
+  //                     onPageChanged: (index) {
+  //                       context.read<HomeProvider>().setCurSlider(index);
+  //                     },
+  //                     itemBuilder: (BuildContext context, int index) {
+  //                       return pages[index];
+  //                     },
+  //                   ),
+  //                 ),
+  //                 Positioned(
+  //                   bottom: 20,
+  //                   width: deviceWidth,
+  //                   left: 0,
+  //                   child: Row(
+  //                     mainAxisSize: MainAxisSize.max,
+  //                     mainAxisAlignment: MainAxisAlignment.center,
+  //                     children: map<Widget>(
+  //                       homeSliderList,
+  //                       (index, url) {
+  //                         return Container(
+  //                             width: 8.0,
+  //                             height: 8.0,
+  //                             margin: EdgeInsets.symmetric(
+  //                                 vertical: 10.0, horizontal: 2.0),
+  //                             decoration: BoxDecoration(
+  //                               shape: BoxShape.circle,
+  //                               color: context.read<HomeProvider>().curSlider ==
+  //                                       index
+  //                                   ? Theme.of(context).colorScheme.fontColor
+  //                                   : Theme.of(context).colorScheme.lightBlack,
+  //                             ));
+  //                       },
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             );
+  //     },
+  //     selector: (_, homeProvider) => homeProvider.sliderLoading,
+  //   );
+  // }
 
   Widget _firstHeader(){
     return Row(
@@ -1728,6 +2431,7 @@ class _HomePageState extends State<HomePage>
       getUserCurrentLocation();
       getCurrentAddress();
       getMyBookings();
+      getRestaurants();
       // getSeller();
       getSection();
       getOfferImages();
@@ -1894,6 +2598,7 @@ class _HomePageState extends State<HomePage>
         user.setName(setting.userName);
         user.setEmail(setting.email);
         user.setProfilePic(setting.profileUrl);
+        user.setGender(setting.email);
 
         Map<String, dynamic> tempData = getdata["data"];
         if (tempData.containsKey(TAG))

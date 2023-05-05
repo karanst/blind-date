@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:blind_date/Model/Section_Model.dart';
+import 'package:blind_date/Model/user_data_model.dart';
 import 'package:blind_date/Provider/CategoryProvider.dart';
 import 'package:blind_date/Provider/HomeProvider.dart';
 import 'package:blind_date/Screen/Dashboard.dart';
@@ -83,6 +84,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
 
   Animation? buttonSqueezeanimation;
   AnimationController? buttonController;
+  String? usrName, mobileNo, email, profileImage;
 
   requestTraining() async{
     var headers = {
@@ -154,9 +156,67 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     });
   }
 
+  Date? userData;
+  getUserData() async {
+    // CUR_USERID = await getPrefrence(Id);
+    var headers = {
+      'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
+    };
+    var request =
+    http.MultipartRequest('POST', Uri.parse(getUserDetailsApi.toString()));
+    request.fields.addAll({
+      'user_id': CUR_USERID.toString()
+    });
+
+    http.StreamedResponse response = await request.send();
+    request.headers.addAll(headers);
+
+    print("this is user profile request ====>>>> ${request.fields.toString()}");
+
+    if (response.statusCode == 200) {
+      String str = await response.stream.bytesToString();
+      var result = json.decode(str);
+      final fResponse = UserDataModel.fromJson(result);
+
+      bool error = result['error'];
+
+      if (!error) {
+        userData = fResponse.date![0];
+        print("this is user Data ${userData!.username}");
+        if(userData != null) {
+          if(userData!.username != null) {
+            usrName = userData!.username.toString();
+          }
+          if(userData!.mobile != null) {
+            setState(() {
+              mobileNo = userData!.mobile.toString();
+            });
+          }
+          if(userData!.email != null) {
+           setState(() {
+             email = userData!.email.toString();
+           });
+          }
+          if(userData!.image != null) {
+           setState(() {
+             profileImage = userData!.image.toString();
+           });
+          }
+
+        }
+
+      } else {
+        // setSnackbar(msg);
+      }
+
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
 
   @override
   void initState() {
+
     //getUserDetails();
     // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -187,6 +247,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
 
     super.initState();
     getCat();
+    getUserData();
   }
 
   _getSaved() async {
@@ -275,7 +336,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                         return Text(
                           userName == ""
                               ? getTranslated(context, 'GUEST')!
-                              : userName,
+                              : userName.toString(),
                           style: Theme.of(context)
                               .textTheme
                               .subtitle1!
@@ -984,7 +1045,186 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _getHeader(),
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)
+                ),
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: colors.primary),
+                    borderRadius: BorderRadius.circular(13)
+                  ),
+                  child: Row(
+
+                    children: [
+                      profileImage != null || profileImage != '' || profileImage != 'https://developmentalphawizz.com/blind_date/'?
+                      Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                                color: colors.primary),
+                            shape: BoxShape.circle,
+                            // borderRadius:
+                            // BorderRadius.circular(15),
+                            image: DecorationImage(
+                                image: NetworkImage(profileImage.toString()),
+                                fit: BoxFit.fill
+                              //AssetImage(Image.file(file)File(tableImage!.path)),
+                            )),
+                        width: MediaQuery.of(context)
+                            .size
+                            .width /
+                            2 -
+                            100,
+                        height: MediaQuery.of(context)
+                            .size
+                            .width /
+                            2 -
+                            100,
+                      )
+                          : Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                                color: colors.primary),
+                            shape: BoxShape.circle,
+                            // borderRadius:
+                            // BorderRadius.circular(15),
+                            // image: DecorationImage(
+                            //     image: NetworkImage(profileImage.toString()),
+                            //     fit: BoxFit.fill
+                            // )
+                        ),
+                        width: MediaQuery.of(context)
+                            .size
+                            .width /
+                            2 -
+                            100,
+                        height: MediaQuery.of(context)
+                            .size
+                            .width /
+                            2 -
+                            100,
+                        child: Center(child: 
+                          Icon(Icons.person, size: 50,),),
+                      ),
+                      const SizedBox(width: 10,),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Selector<UserProvider, String>(
+                              selector: (_, provider) => provider.curUserName,
+                              builder: (context, userName, child) {
+                                nameController = TextEditingController(text: userName);
+                                return Text(
+                                  userName == ""
+                                      ? getTranslated(context, 'GUEST')!
+                                      : userName.toString(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle1!
+                                      .copyWith(
+                                    color: Theme.of(context).colorScheme.fontColor,
+                                  ),
+                                );
+                              }),
+                          Selector<UserProvider, String>(
+                              selector: (_, provider) => provider.mob,
+                              builder: (context, userMobile, child) {
+                                return userMobile != ""
+                                    ? Text(
+                                  userMobile,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle2!
+                                      .copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .fontColor,
+                                      fontWeight: FontWeight.normal),
+                                )
+                                    : Container(
+                                  height: 0,
+                                );
+                              }),
+                          Selector<UserProvider, String>(
+                              selector: (_, provider) => provider.email,
+                              builder: (context, userEmail, child) {
+                                emailController =
+                                    TextEditingController(text: userEmail);
+                                return userEmail != ""
+                                    ? Text(
+                                  userEmail,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle2!
+                                      .copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .fontColor,
+                                      fontWeight: FontWeight.normal),
+                                )
+                                    : Container(
+                                  height: 0,
+                                );
+                              }),
+
+                          /* Consumer<UserProvider>(builder: (context, userProvider, _) {
+                    print("mobb**${userProvider.profilePic}");
+                    return (userProvider.mob != "")
+                        ? Text(
+                            userProvider.mob,
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle2!
+                                .copyWith(color: Theme.of(context).colorScheme.fontColor),
+                          )
+                        : Container(
+                            height: 0,
+                          );
+                  }),*/
+                          Consumer<UserProvider>(builder: (context, userProvider, _) {
+                            return userProvider.curUserName == ""
+                                ? Padding(
+                                padding: const EdgeInsetsDirectional.only(top: 7),
+                                child: InkWell(
+                                  child: Text(
+                                      getTranslated(context, 'LOGIN_REGISTER_LBL')!,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .caption!
+                                          .copyWith(
+                                        color: colors.primary,
+                                        decoration: TextDecoration.underline,
+                                      )),
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => Login(),
+                                        ));
+                                  },
+                                ))
+                                : Container();
+                          }),
+                        ],
+                      ),
+                      Spacer(),
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colors.primary
+                        ),
+                          child: IconButton(onPressed: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> UpdateCompleteProfile()));
+                          }, icon: Icon(Icons.edit, color: colors.whiteTemp, size: 18,)))
+
+
+                    ],
+                  ),
+                ),
+              ),
+              // _getHeader(),
               _getDrawer(),
             ],
           ),

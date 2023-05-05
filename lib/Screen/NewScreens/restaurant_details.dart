@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Model/Transaction_Model.dart';
 
@@ -79,11 +80,11 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
     var request =
     http.MultipartRequest('POST', Uri.parse(getRestroListApi.toString()));
     request.fields.addAll({
-      'user_type': 'female',
+      'user_type': gender.toString(),
       'id': widget.id.toString()
     });
 
-    print("this is restro request ${request.fields.toString()}");
+    print("this is restaurant table request ${request.fields.toString()}");
     request.headers.addAll(headers);
 
     http.StreamedResponse response = await request.send();
@@ -467,7 +468,7 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
                       child: Text(tablesList[index].name.toString(),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 2,
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,  color: colors.blackTemp)),
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,  color: Theme.of(context).colorScheme.fontColor)),
                     ),
                     const SizedBox(height: 5,),
                     Container(
@@ -479,7 +480,7 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
                     ),
                     const SizedBox(height: 5,),
                     Text('Table Price : ₹ ${tablesList[index].price.toString()}', style: TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 14, color: colors.blackTemp
+                        fontWeight: FontWeight.w600, fontSize: 14, color: Theme.of(context).colorScheme.fontColor
                     ),),
 
                   ],
@@ -505,63 +506,62 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
 
   }
 
-  bookingNow() async {
-
-    var headers = {
-      'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
-    };
-    var request =
-    http.MultipartRequest('POST', Uri.parse(completeProfileApi.toString()));
-
-    request.fields.addAll({
-    'restaurant_id': widget.data!.id.toString(),
-    'table_id': tablesList[0].id.toString(),
-    'approx_amount':'1000',
-    'date':'2023-05-05',
-    'time':'10:00',
-    'booking_amount':'100',
-    'booking_transaction_id':'ABC7896543214',
-    'booking_payment_status':'1',
-    'booking_id':'22' ,
-      'user_id': CUR_USERID.toString()
-    });
-
-    // if(imagePathList != null) {
-    //   for (var i = 0; i < imagePathList.length; i++) {
-    //     imagePathList == null
-    //         ? null
-    //         : request.files.add(await http.MultipartFile.fromPath(
-    //         'images[]', imagePathList[i].toString()));
-    //   }
-    // }
-
-    print(
-        "this is complete profile request ====>>>> ${request.fields.toString()} and ${request.files.toString()}");
-    request.headers.addAll(headers);
-
-    http.StreamedResponse response = await request.send();
-    if (response.statusCode == 200) {
-      String str = await response.stream.bytesToString();
-      var result = json.decode(str);
-      bool error = result['error'];
-      String msg = result['message'];
-      print("this is result response $error and $msg");
-      if (!error) {
-        setSnackbar(msg, context);
-        // Navigator.pushReplacement(context,
-        //     MaterialPageRoute(builder: (context) => Dashboard1()));
-      } else {
-        setSnackbar(msg, context);
-      }
-    } else {
-      print(response.reasonPhrase);
-    }
-  }
+  // bookingNow() async {
+  //   var headers = {
+  //     'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
+  //   };
+  //   var request =
+  //   http.MultipartRequest('POST', Uri.parse(completeProfileApi.toString()));
+  //
+  //   request.fields.addAll({
+  //   'restaurant_id': widget.data!.id.toString(),
+  //   'table_id': tablesList[0].id.toString(),
+  //   'approx_amount':'1000',
+  //   'date':'2023-05-05',
+  //   'time':'10:00',
+  //   'booking_amount':'100',
+  //   'booking_transaction_id':'ABC7896543214',
+  //   'booking_payment_status':'1',
+  //   'booking_id':'22' ,
+  //     'user_id': CUR_USERID.toString()
+  //   });
+  //
+  //   // if(imagePathList != null) {
+  //   //   for (var i = 0; i < imagePathList.length; i++) {
+  //   //     imagePathList == null
+  //   //         ? null
+  //   //         : request.files.add(await http.MultipartFile.fromPath(
+  //   //         'images[]', imagePathList[i].toString()));
+  //   //   }
+  //   // }
+  //
+  //   print(
+  //       "this is complete profile request ====>>>> ${request.fields.toString()} and ${request.files.toString()}");
+  //   request.headers.addAll(headers);
+  //
+  //   http.StreamedResponse response = await request.send();
+  //   if (response.statusCode == 200) {
+  //     String str = await response.stream.bytesToString();
+  //     var result = json.decode(str);
+  //     bool error = result['error'];
+  //     String msg = result['message'];
+  //     print("this is result response $error and $msg");
+  //     if (!error) {
+  //       setSnackbar(msg, context);
+  //       // Navigator.pushReplacement(context,
+  //       //     MaterialPageRoute(builder: (context) => Dashboard1()));
+  //     } else {
+  //       setSnackbar(msg, context);
+  //     }
+  //   } else {
+  //     print(response.reasonPhrase);
+  //   }
+  // }
 
   ///RAZORPAY
   ///
     void _handlePaymentSuccess(PaymentSuccessResponse response) {
-      bookingNow();
+      // bookingNow();
       // placeOrder(response.paymentId);
       // sendRequest(response.paymentId, "RazorPay");
     }
@@ -690,11 +690,23 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
     }
   }
 
+  String? gender;
+
+  getUserData() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState((){
+      gender = prefs.getString(GENDER);
+    });
+  }
+
 
   @override
   void initState() {
     super.initState();
-    getRestaurantTable();
+    getUserData();
+    Future.delayed(Duration(seconds: 1), (){
+      getRestaurantTable();
+    });
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);

@@ -27,6 +27,7 @@ final Uri bookNowApi = Uri.parse(baseUrl + 'booking');
 final Uri getUserDetailsApi = Uri.parse(baseUrl + 'get_user_details');
 final Uri updateSignUpApi = Uri.parse(baseUrl + 'update_signup');
 final Uri bookingListApi = Uri.parse(baseUrl + 'booking_lists');
+final Uri getCouponCodesApi = Uri.parse(baseUrl + 'get_promo_code');
 
 final Uri referFormApi = Uri.parse(baseUrl + 'referral_form');
 final Uri referralListApi = Uri.parse(baseUrl + 'refferal_list');
@@ -163,6 +164,7 @@ const String USERNAME = 'username';
 const String ADDRESS = 'address';
 const String EMAIL = 'email';
 const String MOBILE = 'mobile';
+const String GENDER = 'gender';
 const String CITY = 'city';
 const String DOB = 'dob';
 const String AREA = 'area';

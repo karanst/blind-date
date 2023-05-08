@@ -310,13 +310,14 @@ noIntImage() {
 
 setSnackbar(String msg, BuildContext context) {
   ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
-    duration: Duration(seconds: 1),
+    duration: Duration(seconds: 2),
     content: new Text(
       msg,
       textAlign: TextAlign.center,
-      style: TextStyle(color: Theme.of(context).colorScheme.black),
+      style: TextStyle(color: colors.whiteTemp, fontWeight: FontWeight.w600),
+      //Theme.of(context).colorScheme.black),
     ),
-    backgroundColor: Theme.of(context).colorScheme.white,
+    backgroundColor: colors.primary,
     elevation: 1.0,
   ));
 }
@@ -674,4 +675,67 @@ dialogAnimate(BuildContext context, Widget dialge) {
         return Container();
       } //as Widget Function(BuildContext, Animation<double>, Animation<double>)
       );
+}
+
+
+class BlinkText extends StatefulWidget {
+  final String? title;
+  const BlinkText({Key? key, this.title}) : super(key: key);
+  @
+  override
+
+  _BlinkTextState createState() => _BlinkTextState();
+}
+
+class _BlinkTextState extends State<BlinkText>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  @
+  override
+
+  void initState() {
+    super.initState();
+    _controller =
+    AnimationController(vsync: this, duration: Duration(seconds: 1))
+      ..repeat();
+  }
+  @
+  override
+
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+  @
+  override
+
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        height: 20,
+        // width: 60,
+        child: FadeTransition(
+          opacity: _controller,
+          child: Text(
+           widget.title.toString(),
+            style: TextStyle(color: colors.whiteTemp, fontWeight: FontWeight.w600, fontSize: 16),
+          ),
+        ),
+      ),
+    );
+    //   Scaffold(
+    //   // appBar: AppBar(
+    //   //   title: Text(widget.title as String),
+    //   // ),
+    //   body: Center(
+    //     child: FadeTransition(
+    //       opacity: _controller,
+    //       child: Text(
+    //         'Blinking Text',
+    //         style: TextStyle(color: colors.whiteTemp),
+    //       ),
+    //     ),
+    //   ),
+    // );
+  }
 }

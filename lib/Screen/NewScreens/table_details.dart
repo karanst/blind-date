@@ -5,7 +5,9 @@ import 'package:blind_date/Helper/Stripe_Service.dart';
 import 'package:blind_date/Helper/user_custom_radio.dart';
 import 'package:blind_date/Model/get_coupon_model.dart';
 import 'package:blind_date/Model/restaurant_model.dart';
+import 'package:blind_date/Provider/CartProvider.dart';
 import 'package:blind_date/Provider/SettingProvider.dart';
+import 'package:blind_date/Screen/bottom_bar.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart' as http;
 import 'package:blind_date/Helper/AppBtn.dart';
@@ -427,7 +429,9 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
                 const SizedBox(height: 10,),
                restroCard(),
                 const SizedBox(height: 10,),
-                Row(
+                gender == "male" || gender == "Male"?
+                    SizedBox.shrink()
+                : Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
@@ -646,11 +650,22 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: ElevatedButton(onPressed: (){
-                    if(selectedDate != null && selectedTime != null) {
-                      razorpayPayment(double.parse(widget.restroData!.bookingAmount
-                          .toString()));
+                    print("this si gender and avaialbility ===>>> ${gender} and ${widget.restroData!.isDateAvailable}");
+                    if(gender =="male" || gender == "Male") {
+                      if (widget.restroData!.isDateAvailable == true) {
+                          razorpayPayment(double.parse(widget.restroData!.bookingAmount.toString()));
+                      }else{
+                        setSnackbar("You are not allowed to book now, Please try again later!", context);
+                      }
                     }else{
-                      setSnackbar("Please select booking date and time", context);
+                      if (selectedDate != null && selectedTime != null) {
+                        razorpayPayment(double.parse(
+                            widget.restroData!.bookingAmount
+                                .toString()));
+                      } else {
+                        setSnackbar(
+                            "Please select booking date and time", context);
+                      }
                     }
                   }, child: Text("Book Now", style: TextStyle(color: colors.whiteTemp, fontWeight: FontWeight.w600, fontSize: 16),),
                     style: ElevatedButton.styleFrom(primary: colors.primary, shape: StadiumBorder(),
@@ -849,7 +864,9 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
                   ],
                 ),
                 ElevatedButton(
-                    onPressed: (){},
+                    onPressed: (){
+                      validatePromo(couponsList[index].promoCode.toString());
+                    },
                     style: ElevatedButton.styleFrom(
                         primary: colors.primary,
                         shape: StadiumBorder()
@@ -884,6 +901,7 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
     var headers = {
       'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
     };
+
     var request =
     http.MultipartRequest('POST', Uri.parse(bookNowApi.toString()));
 
@@ -891,13 +909,14 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
       'restaurant_id': widget.restroData!.id.toString(),
       'table_id': widget.data!.id.toString(),
       'approx_amount': widget.data!.price.toString(),
-      'date': selectedDate.toString(),
-      'time': selectedTime!.format(context).toString(),
+      'date': gender == "male" ? widget.restroData!.bookingDate.toString()  : selectedDate.toString(),
+      'time': gender == "male" ? widget.restroData!.bookingTime.toString()  :selectedTime!.format(context).toString(),
       'booking_amount': widget.restroData!.bookingAmount.toString(),
       'booking_transaction_id':transID.toString(),
       'booking_payment_status':'1',
       'booking_id': gender == 'male' || gender == 'Male' ? widget.restroData!.bookingId.toString() : '',
-      'user_id': CUR_USERID.toString()
+      'user_id': CUR_USERID.toString(),
+      'user_type': gender.toString()
     });
 
     // if(imagePathList != null) {
@@ -921,8 +940,9 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
       print("this is result response $error and $msg");
       if (!error) {
         setSnackbar(msg, context);
-        // Navigator.pushReplacement(context,
-        //     MaterialPageRoute(builder: (context) => Dashboard1()));
+
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => Dashboard1()));
       } else {
         setSnackbar(msg, context);
       }
@@ -930,6 +950,64 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
       print(response.reasonPhrase);
     }
   }
+
+  Future<void> validatePromo(String promoCode) async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        setState(() {});
+        var parameter = {
+          USER_ID: CUR_USERID,
+          PROMOCODE: promoCode.toString(),
+          FINAL_TOTAL: widget.data!.price.toString(),
+        };
+        print("this is apply promo code $parameter");
+        Response response =
+        await post(validatePromoApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
+
+        if (response.statusCode == 200) {
+          var getdata = json.decode(response.body);
+
+          bool error = getdata["error"];
+          String? msg = getdata["message"];
+          if (!error) {
+            // var data = getdata["data"][0];
+
+            // totalPrice = double.parse(data["final_total"]) + delCharge;
+            //
+            // promoAmt = double.parse(data["final_discount"]);
+            // promocode = data["promo_code"];
+            // isPromoValid = true;
+            setSnackbar("Promo Code applied successfully!", context);
+            Navigator.pop(context);
+          } else {
+
+            setSnackbar(msg!, context);
+            Navigator.pop(context);
+            // isPromoValid = false;
+            // promoAmt = 0;
+            // promocode = null;
+            // promoC.clear();
+            // var data = getdata["data"];
+            //
+            // totalPrice = double.parse(data["final_total"]) + delCharge;
+
+          }
+
+        }
+      } on TimeoutException catch (_) {
+
+        setState(() {});
+        setSnackbar(getTranslated(context, 'somethingMSg')!, context);
+      }
+    } else {
+      _isNetworkAvail = false;
+
+      setState(() {});
+    }
+  }
+
   List<Coupons> couponsList = [];
 
   getCouponCodes() async {
@@ -1199,5 +1277,13 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
           ),
         ),
         body: bodyWidget());
+  }
+
+  @override
+  void dispose() {
+    buttonController!.dispose();
+
+    if (_razorpay != null) _razorpay.clear();
+    super.dispose();
   }
 }

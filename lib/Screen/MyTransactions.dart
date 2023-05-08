@@ -230,26 +230,26 @@ class _TransactionHistoryState extends State<TransactionHistory>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Expanded(
-                            child: Text(
-                                getTranslated(context, 'ORDER_ID_LBL')! +
-                                    " : " +
-                                    tranList[index].orderId!),
-                          ),
-                          Container(
-                            margin: EdgeInsets.only(left: 8),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 2),
-                            decoration: BoxDecoration(
-                                color: back,
-                                borderRadius: new BorderRadius.all(
-                                    const Radius.circular(4.0))),
-                            child: Text(
-                              tranList[index].status!,
-                              style: TextStyle(
-                                  color: Theme.of(context).colorScheme.white),
-                            ),
-                          )
+                          // Expanded(
+                          //   child: Text(
+                          //       getTranslated(context, 'ORDER_ID_LBL')! +
+                          //           " : " +
+                          //           tranList[index].orderId!),
+                          // ),
+                          // Container(
+                          //   margin: EdgeInsets.only(left: 8),
+                          //   padding: EdgeInsets.symmetric(
+                          //       horizontal: 10, vertical: 2),
+                          //   decoration: BoxDecoration(
+                          //       color: back,
+                          //       borderRadius: new BorderRadius.all(
+                          //           const Radius.circular(4.0))),
+                          //   child: Text(
+                          //     tranList[index].status!,
+                          //     style: TextStyle(
+                          //         color: Theme.of(context).colorScheme.white),
+                          //   ),
+                          // )
                         ],
                       ),
                     ),

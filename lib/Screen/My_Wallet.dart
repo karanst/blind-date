@@ -44,6 +44,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   List<TransactionModel> tempList = [];
   TextEditingController? amtC, msgC;
   List<String?> paymentMethodList = [];
+
   List<String> paymentIconList = [
     'assets/images/paypal.svg',
     'assets/images/rozerpay.svg',

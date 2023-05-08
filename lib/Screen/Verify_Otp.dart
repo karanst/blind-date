@@ -204,17 +204,13 @@ class _MobileOTPState extends State<VerifyOtp> with TickerProviderStateMixin {
       print("this is send otp data $sendOtpApi and $getdata");
       await buttonController!.reverse();
 
-      SettingProvider settingsProvider =
-      Provider.of<SettingProvider>(context, listen: false);
-
-      // if (widget.title == getTranslated(context, 'SEND_OTP_TITLE')) {
       if (!error!) {
-        int oTp = getdata["data"];
+        String oTp = getdata["otp"];
         setState(() {
          widget.otp = oTp.toString();
         });
         print("navigation");
-        // setSnackbar(otp.toString());
+        setSnackbar(msg.toString());
 
         // settingsProvider.setPrefrence(MOBILE, mobile!);
         // settingsProvider.setPrefrence(COUNTRY_CODE, countrycode!);

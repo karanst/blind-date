@@ -1268,7 +1268,7 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
                       child: Container(
                           child: Stack(
                             children: [
-                              imageProfile == null || imageProfile.toString() == ''?
+                              imageProfile == null || imageProfile.toString() == 'https://developmentalphawizz.com/blind_date/'?
                               profileImage == null
                                   ? Container(
                                 decoration: BoxDecoration(

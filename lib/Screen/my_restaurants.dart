@@ -28,12 +28,13 @@ class _MyRestaurantsState extends State<MyRestaurants>
   AnimationController? buttonController;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
+  String? gender;
 
   getRestaurants() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     double? lat = prefs.getDouble(LATITUDE);
     double? long = prefs.getDouble(LONGITUDE);
-    String? gender = prefs.getString(GENDER);
+     gender = prefs.getString(GENDER);
     var headers = {
       'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
     };
@@ -545,107 +546,132 @@ class _MyRestaurantsState extends State<MyRestaurants>
   Widget restroCard(int index) {
     return InkWell(
       onTap: (){
-        Navigator.push(context, MaterialPageRoute(builder: (context) =>
-            RestaurantDetails(id: restaurantList[index].id.toString(),
-            data: restaurantList[index],)));
+        if(restaurantList[index].isDateAvailable == true ) {
+          Navigator.push(context, MaterialPageRoute(builder: (context) =>
+              RestaurantDetails(id: restaurantList[index].id.toString(),
+                data: restaurantList[index],)));
+        }
       },
       child: Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          child: Row(
-            // crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-            Padding(
-                padding: const EdgeInsets.all(10),
-                child: restaurantList[index].logo == null ||
-                        restaurantList[index].logo ==
-                            'https://developmentalphawizz.com/blind_date/'
-                    ? Container(
-                        padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: colors.primary, width: 2)),
-                        child: Container(
-                          height: 80,
-                          width: 80,
+          child: Column(
+            children: [
+              Row(
+                // crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: restaurantList[index].logo == null ||
+                            restaurantList[index].logo ==
+                                'https://developmentalphawizz.com/blind_date/'
+                            ? Container(
+                          padding: EdgeInsets.all(5),
                           decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                                image:
-                                    AssetImage('assets/images/placeholder.png'),
-                                fit: BoxFit.fitHeight),
-                            // borderRadius: BorderRadius.circular(15)
+                              shape: BoxShape.circle,
+                              border: Border.all(color: colors.primary, width: 2)),
+                          child: Container(
+                            height: 80,
+                            width: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                  image:
+                                  AssetImage('assets/images/placeholder.png'),
+                                  fit: BoxFit.fitHeight),
+                              // borderRadius: BorderRadius.circular(15)
+                            ),
+                            // child: Image.network(restaurantList[index].image.toString(), width: 100, height: 100,)
                           ),
-                          // child: Image.network(restaurantList[index].image.toString(), width: 100, height: 100,)
-                        ),
-                      )
-                    : Container(
-                        padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: colors.primary, width: 2)),
-                        child: Container(
-                          height: 80,
-                          width: 80,
+                        )
+                            : Container(
+                          padding: EdgeInsets.all(5),
                           decoration: BoxDecoration(
-                            // border: Border.all(color: primary, width: 1),
-                            shape: BoxShape.circle,
-                            // borderRadius: BorderRadius.circular(12),
-                            image: DecorationImage(
-                                image: NetworkImage(
-                                    restaurantList[index].logo.toString()),
-                                fit: BoxFit.fill),
-                            // borderRadius: BorderRadius.circular(15)
+                              shape: BoxShape.circle,
+                              border: Border.all(color: colors.primary, width: 2)),
+                          child: Container(
+                            height: 80,
+                            width: 80,
+                            decoration: BoxDecoration(
+                              // border: Border.all(color: primary, width: 1),
+                              shape: BoxShape.circle,
+                              // borderRadius: BorderRadius.circular(12),
+                              image: DecorationImage(
+                                  image: NetworkImage(
+                                      restaurantList[index].logo.toString()),
+                                  fit: BoxFit.fill),
+                              // borderRadius: BorderRadius.circular(15)
+                            ),
+                            // child: Image.network(restaurantList[index].image.toString(), width: 100, height: 100,)
                           ),
-                          // child: Image.network(restaurantList[index].image.toString(), width: 100, height: 100,)
-                        ),
-                      )),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 30.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: MediaQuery.of(context).size.width/2-20,
-                        child: Text(restaurantList[index].storeName.toString(),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,  color: Theme.of(context).colorScheme.fontColor)),
+                        )),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 0.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: MediaQuery.of(context).size.width/2-20,
+                            child: Text(restaurantList[index].storeName.toString(),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,  color: Theme.of(context).colorScheme.fontColor)),
+                          ),
+                          const SizedBox(height: 5,),
+                          Container(
+                            width: MediaQuery.of(context).size.width/2-20,
+                            child: Text(restaurantList[index].address.toString(),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                          ),
+                          const SizedBox(height: 5,),
+                          gender == "male" || gender == "Male"?
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                width: MediaQuery.of(context).size.width/2-70,
+                                // child: Text(restaurantList[index].address.toString(),
+                                //     overflow: TextOverflow.ellipsis,
+                                //     maxLines: 2,
+                                //     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10.0, right: 5),
+                                child: Container(
+                                    width: MediaQuery.of(context).size.width/3 - 20,
+                                    padding: EdgeInsets.only( top: 4, bottom: 4),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(40),
+                                        color: restaurantList[index].isDateAvailable == true ? Colors.green
+                                            : Colors.red
+                                      //colors.primary
+                                    ),
+                                    child: Center(
+                                        child:
+                                        restaurantList[index].isDateAvailable == true ?
+                                        BlinkText( title: "Available" )
+                                            : Text("Not Available", style: TextStyle(color: colors.whiteTemp, fontWeight: FontWeight.w600) ,))
+                                ),
+                              ),
+                            ],
+                          )
+                              : SizedBox.shrink(),
+
+                        ],
                       ),
-                      const SizedBox(height: 5,),
-                      Container(
-                        width: MediaQuery.of(context).size.width/2-20,
-                        child: Text(restaurantList[index].address.toString(),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
-                      ),
-
-
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 60.0, right: 5),
-                  child: Container(
-                     width: 40,
-                    padding: EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(40),
-                        color: colors.primary
                     ),
-                    child: Center(
-                      child: Text(restaurantList[index].noOfRatings.toString(), style: TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 14, color: colors.whiteTemp
-                      ),),
-                    ),
-                  ),
-                )
 
-          ])),
+
+                  ]),
+
+
+            ],
+          )),
     );
 
     //   Container(

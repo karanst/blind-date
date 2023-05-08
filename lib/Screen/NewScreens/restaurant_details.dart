@@ -380,10 +380,21 @@ class _RestaurantDetailsState extends State<RestaurantDetails> with TickerProvid
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.data!.storeName.toString(), style: TextStyle(
-                    color: colors.primary, fontSize: 20, fontWeight: FontWeight.w600
-                ),),
+                Center(
+                  child: Text(widget.data!.storeName.toString(), style: TextStyle(
+                      color: colors.primary, fontSize: 20, fontWeight: FontWeight.w600
+                  ),),
+                ),
+                const SizedBox(height: 10,),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: Text("Choose your table", style: TextStyle(
+                      color: Theme.of(context).colorScheme.fontColor, fontSize: 18, fontWeight: FontWeight.w600
+                  ),),
+                ),
+
                 const SizedBox(height: 10,),
                 ListView.builder(
                     physics: NeverScrollableScrollPhysics(),

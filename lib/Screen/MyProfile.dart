@@ -723,11 +723,11 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                 ));
           }
           else if (title == getTranslated(context, 'MY_COMMISSION')) {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MyLeadsAccounts(),
-                ));
+            // Navigator.push(
+            //     context,
+            //     MaterialPageRoute(
+            //       builder: (context) => MyLeadsAccounts(),
+            //     ));
           }
           else if (title == getTranslated(context, 'MYWALLET')) {
             Navigator.push(
@@ -1058,8 +1058,33 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                   child: Row(
 
                     children: [
-                      profileImage != null || profileImage != '' || profileImage != 'https://developmentalphawizz.com/blind_date/'?
+                      profileImage == null || profileImage == '' || profileImage == 'https://developmentalphawizz.com/blind_date/'?
                       Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: colors.primary),
+                          shape: BoxShape.circle,
+                          // borderRadius:
+                          // BorderRadius.circular(15),
+                          // image: DecorationImage(
+                          //     image: NetworkImage(profileImage.toString()),
+                          //     fit: BoxFit.fill
+                          // )
+                        ),
+                        width: MediaQuery.of(context)
+                            .size
+                            .width /
+                            2 -
+                            100,
+                        height: MediaQuery.of(context)
+                            .size
+                            .width /
+                            2 -
+                            100,
+                        child: Center(child:
+                        Icon(Icons.person, size: 50,),),
+                      )
+                      : Container(
                         decoration: BoxDecoration(
                             border: Border.all(
                                 color: colors.primary),
@@ -1081,31 +1106,6 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                             .width /
                             2 -
                             100,
-                      )
-                          : Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(
-                                color: colors.primary),
-                            shape: BoxShape.circle,
-                            // borderRadius:
-                            // BorderRadius.circular(15),
-                            // image: DecorationImage(
-                            //     image: NetworkImage(profileImage.toString()),
-                            //     fit: BoxFit.fill
-                            // )
-                        ),
-                        width: MediaQuery.of(context)
-                            .size
-                            .width /
-                            2 -
-                            100,
-                        height: MediaQuery.of(context)
-                            .size
-                            .width /
-                            2 -
-                            100,
-                        child: Center(child: 
-                          Icon(Icons.person, size: 50,),),
                       ),
                       const SizedBox(width: 10,),
                       Column(

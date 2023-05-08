@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:blind_date/Helper/Session.dart';
 import 'package:blind_date/Screen/bottom_bar.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:blind_date/Helper/Color.dart';
 import 'package:blind_date/Helper/String.dart';
@@ -558,7 +559,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 ElevatedButton(
                   onPressed: () {
                     setState(() {
-                      currentIndex = 1;
+                      currentIndex = 0;
                     });
                   },
                   child: Text(
@@ -575,10 +576,11 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                   onPressed: () {
                     if(_selectedItems.isNotEmpty) {
                       setState(() {
-                        currentIndex = 3;
+                        currentIndex = 2;
                       });
                     }else{
-                      setSnackbar("Please select languages!", context);
+                      Fluttertoast.showToast(msg: "Please select languages!");
+                      // setSnackbar("Please select languages!", context);
                     }
                   },
                   child: Text(
@@ -621,7 +623,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 ElevatedButton(
                   onPressed: () {
                     setState(() {
-                      currentIndex = 2;
+                      currentIndex = 1;
                     });
                   },
                   child: Text(
@@ -853,9 +855,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           ),
           // headerWidget(),
           currentIndex == 0 ? chooseGenderWidget() : SizedBox.shrink(),
-          currentIndex == 1 ? chooseAgeGroupWidget() : SizedBox.shrink(),
-          currentIndex == 2 ? chooseLanguageWidget() : SizedBox.shrink(),
-          currentIndex == 3 ?  chooseMultiImage() : SizedBox.shrink(),
+          // currentIndex == 1 ? chooseAgeGroupWidget() : SizedBox.shrink(),
+          currentIndex == 1 ? chooseLanguageWidget() : SizedBox.shrink(),
+          currentIndex == 2 ?  chooseMultiImage() : SizedBox.shrink(),
           const SizedBox(height: 20,)
 
         ],

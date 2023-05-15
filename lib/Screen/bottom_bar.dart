@@ -3,12 +3,15 @@ import 'dart:convert';
 
 import 'package:blind_date/Helper/Color.dart';
 import 'package:blind_date/Helper/Session.dart';
+import 'package:blind_date/Provider/UserProvider.dart';
 import 'package:blind_date/Screen/HomePage.dart';
 import 'package:blind_date/Screen/MyProfile.dart';
+import 'package:blind_date/Screen/My_Wallet.dart';
 import 'package:blind_date/Screen/my_restaurants.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Dashboard1 extends StatefulWidget {
@@ -166,7 +169,80 @@ class _Dashboard1State extends State<Dashboard1> {
           },
           child:
           Scaffold(
-            appBar: getAppBar("", context),
+            appBar: PreferredSize(
+              preferredSize: Size(MediaQuery.of(context).size.width, 80),
+              child: AppBar(
+                leadingWidth: 100,
+                centerTitle: true,
+                leading: currentIndex == 2 ?
+                    SizedBox.shrink()
+                : Selector<UserProvider, String>(
+                    selector: (_, provider) => provider.curUserName,
+                    builder: (context, userName, child) {
+                      // nameController = TextEditingController(text: userName);
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 15.0, top: 20),
+                        child: Container(
+                          width: 90,
+                          child: Text(
+                            userName == ""
+                                ? getTranslated(context, 'GUEST')!
+                                : userName.toString(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1!
+                                .copyWith(
+                              fontSize: 18,
+                              color: colors.whiteTemp,
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                //Icon(Icons.arrow_back_ios, color: colors.primary,),
+                title: Image.asset('assets/images/homelogo.png', height: 60,),
+                backgroundColor: colors.primary,
+                iconTheme: IconThemeData(color: colors.whiteTemp),
+                actions: [
+                  InkWell(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> MyWallet()));
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 25.0, top: 4),
+                      child: Column(
+                        children: [
+                          Icon(Icons.wallet, color: colors.whiteTemp, size: 30,),
+                          Text("Wallet", style: TextStyle(
+                              color: colors.whiteTemp,
+                              fontWeight: FontWeight.w600
+                          ),)
+                        ],
+                      ),
+                    ),
+                  )],
+                // actions: [
+                //   InkWell(
+                //     onTap: (){
+                //      // Navigator.push(context, MaterialPageRoute(builder: (context)=> WalletHistory()));
+                //     },
+                //     child: Padding(
+                //       padding: const EdgeInsets.only(right: 25.0, top: 4),
+                //       child: Column(
+                //         children: [
+                //           Icon(Icons.wallet, color: colors.whiteTemp, size: 34,),
+                //           Text("Wallet", style: TextStyle(
+                //               color: colors.whiteTemp,
+                //               fontWeight: FontWeight.w600
+                //           ),)
+                //         ],
+                //       ),
+                //     ),
+                //   )],
+              ),
+            ),
               body:
               // type == "2" || type == "3" || type == "4" ?
               _handlePagesDelivery[currentIndex],

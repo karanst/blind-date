@@ -489,7 +489,15 @@ class _HomePageState extends State<HomePage>
   Widget restroCard(int index) {
     return InkWell(
       onTap: (){
-        if(restaurantList[index].isDateAvailable == true ) {
+        if(gender == "Male" || gender == "male") {
+          if (restaurantList[index].isDateAvailable == true) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                RestaurantDetails(id: restaurantList[index].id.toString(),
+                  data: restaurantList[index],)));
+          }else{
+            setSnackbar("Tables not available!", context);
+          }
+        }else{
           Navigator.push(context, MaterialPageRoute(builder: (context) =>
               RestaurantDetails(id: restaurantList[index].id.toString(),
                 data: restaurantList[index],)));

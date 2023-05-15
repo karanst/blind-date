@@ -1,4 +1,4 @@
-package com.aimbiz.referral;
+package com.user.blinddate;
 
 import io.flutter.embedding.android.FlutterActivity;
 

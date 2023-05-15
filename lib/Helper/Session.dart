@@ -58,8 +58,30 @@ getAppBar(String title, BuildContext context) {
   return PreferredSize(
     preferredSize: Size(MediaQuery.of(context).size.width, 80),
     child: AppBar(
+      leadingWidth: 100,
       centerTitle: true,
-      leading: Icon(Icons.arrow_back_ios, color: colors.primary,),
+      leading:
+      // Selector<UserProvider, String>(
+      //     selector: (_, provider) => provider.curUserName,
+      //     builder: (context, userName, child) {
+      //       // nameController = TextEditingController(text: userName);
+      //       return Padding(
+      //         padding: const EdgeInsets.only(left: 15.0, top: 20),
+      //         child: Text(
+      //           userName == ""
+      //               ? getTranslated(context, 'GUEST')!
+      //               : userName.toString(),
+      //           style: Theme.of(context)
+      //               .textTheme
+      //               .subtitle1!
+      //               .copyWith(
+      //             fontSize: 18,
+      //             color: colors.whiteTemp,
+      //           ),
+      //         ),
+      //       );
+      //     }),
+      Icon(Icons.arrow_back_ios, color: colors.primary,),
       title: Image.asset('assets/images/homelogo.png', height: 60,),
       backgroundColor: colors.primary,
       iconTheme: IconThemeData(color: colors.whiteTemp),

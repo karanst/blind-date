@@ -1,9 +1,9 @@
 final String appName = 'blind_date';
 
-final String packageName = 'com.aimbiz.referral';
+final String packageName = 'com.user.blinddate';
 final String androidLink = 'https://play.google.com/store/apps/details?id=';
 
-final String iosPackage = 'com.aimbiz.referral';
+final String iosPackage = 'com.user.blinddate';
 final String iosLink = 'your ios link here';
 final String appStoreId = '123456789';
 

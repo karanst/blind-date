@@ -276,7 +276,7 @@ class _MobileOTPState extends State<VerifyOtp> with TickerProviderStateMixin {
 
       // if (widget.title == getTranslated(context, 'SEND_OTP_TITLE')) {
       if (!error!) {
-        setSnackbar(msg!);
+        // setSnackbar(msg!);
         var i = getdata["data"];
         id = i[ID];
         username = i[USERNAME];
@@ -475,7 +475,7 @@ class _MobileOTPState extends State<VerifyOtp> with TickerProviderStateMixin {
     return Expanded(
       flex: 4,
       child: Center(
-        child: Image.asset('assets/images/homelogo.png'),
+        child: Image.asset('assets/images/loginlogo.png'),
       ),
     );
   }
@@ -671,7 +671,7 @@ class _MobileOTPState extends State<VerifyOtp> with TickerProviderStateMixin {
         width: 100,
         height: 100,
         child: Image.asset(
-          'assets/images/homelogo.png',
+          'assets/images/loginlogo.png',
 
         ),
 

@@ -546,7 +546,15 @@ class _MyRestaurantsState extends State<MyRestaurants>
   Widget restroCard(int index) {
     return InkWell(
       onTap: (){
-        if(restaurantList[index].isDateAvailable == true ) {
+        if(gender == "Male" || gender == "male") {
+          if (restaurantList[index].isDateAvailable == true) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                RestaurantDetails(id: restaurantList[index].id.toString(),
+                  data: restaurantList[index],)));
+          }else{
+            setSnackbar("Tables not available!", context);
+          }
+        }else{
           Navigator.push(context, MaterialPageRoute(builder: (context) =>
               RestaurantDetails(id: restaurantList[index].id.toString(),
                 data: restaurantList[index],)));
@@ -572,8 +580,8 @@ class _MyRestaurantsState extends State<MyRestaurants>
                               shape: BoxShape.circle,
                               border: Border.all(color: colors.primary, width: 2)),
                           child: Container(
-                            height: 80,
-                            width: 80,
+                            height: 75,
+                            width: 75,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               image: DecorationImage(
@@ -591,8 +599,8 @@ class _MyRestaurantsState extends State<MyRestaurants>
                               shape: BoxShape.circle,
                               border: Border.all(color: colors.primary, width: 2)),
                           child: Container(
-                            height: 80,
-                            width: 80,
+                            height: 75,
+                            width: 75,
                             decoration: BoxDecoration(
                               // border: Border.all(color: primary, width: 1),
                               shape: BoxShape.circle,

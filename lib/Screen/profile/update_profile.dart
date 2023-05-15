@@ -18,6 +18,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -402,7 +403,8 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
         // longitude = i[LONGITUDE];
         // image = i[IMAGE];
         // gender=i['gender'];
-        setSnackbar(msg);
+        // setSnackbar(msg);
+        Fluttertoast.showToast(msg: msg);
         Navigator.pop(context);
 
       } else {
@@ -483,10 +485,12 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
             prefs.setString(GENDER, gender.toString());
             setState(() {
               _value3 = 1;
+              gender = userData!.gender.toString();
             });
           } else {
             setState(() {
               _value3 = 2;
+              gender = userData!.gender.toString();
             });
           }
         }
@@ -1341,7 +1345,7 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
                                     // borderRadius:
                                     // BorderRadius.circular(15),
                                     image: DecorationImage(
-                                        image: NetworkImage(adharBack.toString()),
+                                        image: NetworkImage(imageProfile.toString()),
                                         fit: BoxFit.fill
                                       //AssetImage(Image.file(file)File(tableImage!.path)),
                                     )),
@@ -1389,7 +1393,7 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
                             child: Container(
                                 child: Column(
                                   children: [
-                                    adharFront == null || adharFront.toString() == ''?
+                                    adharFront == null || adharFront.toString() == ''|| adharFront.toString() == 'https://developmentalphawizz.com/blind_date/'?
                                     aadhaarFront == null
                                         ? Container(
                                       decoration: BoxDecoration(
@@ -1457,7 +1461,7 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
                                           borderRadius:
                                           BorderRadius.circular(15),
                                           image: DecorationImage(
-                                              image: NetworkImage(adharBack.toString()),
+                                              image: NetworkImage(adharFront.toString()),
                                               fit: BoxFit.fill
                                             //AssetImage(Image.file(file)File(tableImage!.path)),
                                           )),
@@ -1481,7 +1485,7 @@ class _UpdateCompleteProfilePageState extends State<UpdateCompleteProfile> with 
                               _selectImage(context, 2);
                             },
                             child: Container(
-                              child: adharBack == null || adharBack.toString() == ''?
+                              child: adharBack == null || adharBack.toString() == '' || adharBack.toString() == 'https://developmentalphawizz.com/blind_date/'?
                               aadhaarBack == null
                                   ? Container(
                                 decoration: BoxDecoration(

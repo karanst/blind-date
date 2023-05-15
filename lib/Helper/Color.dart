@@ -17,9 +17,12 @@ extension colors on ColorScheme {
     },
   );
 
-  static const Color primary = Color(0xffB61C1C);
-  //Color(0xff0C1544);
-  //Color(0xff9B2243);
+  static const Color primary =
+  // Color(0xff4585FB);
+   Color(0xff69009A);
+  //Color(0xffFB0103);
+  //Color(0xffB61C1C);
+
   static const Color secondary = Color(0xffDD5F2C);
 
   Color get btnColor =>

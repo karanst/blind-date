@@ -451,7 +451,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
   ///STEP 3
-    List languages = ['Hindi', 'English', 'Marathi', 'Gujarati'];
+    List languages = ['Hindi/English', 'Marathi', 'Gujarati'];
 
     void _itemChange( itemValue, bool isSelected) {
       setState(() {

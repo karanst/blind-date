@@ -553,7 +553,7 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
                               Row (
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text("${selectedTime!.format(context)}",
+                                  Text('${selectedTime!.format(context).toString()} ${selectedTime!.period.toString().split(".")[1]}',
                                     style: TextStyle(
                                       color: Theme.of(context).colorScheme.fontColor,
                                     ),),
@@ -653,15 +653,13 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
                     print("this si gender and avaialbility ===>>> ${gender} and ${widget.restroData!.isDateAvailable}");
                     if(gender =="male" || gender == "Male") {
                       if (widget.restroData!.isDateAvailable == true) {
-                          razorpayPayment(double.parse(widget.restroData!.bookingAmount.toString()));
+                          razorpayPayment(bookingPrice);
                       }else{
                         setSnackbar("You are not allowed to book now, Please try again later!", context);
                       }
                     }else{
                       if (selectedDate != null && selectedTime != null) {
-                        razorpayPayment(double.parse(
-                            widget.restroData!.bookingAmount
-                                .toString()));
+                        razorpayPayment(bookingPrice);
                       } else {
                         setSnackbar(
                             "Please select booking date and time", context);
@@ -897,6 +895,7 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
   }
 
   bookingNow(String transID) async {
+    print("this is working here also!");
 
     var headers = {
       'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
@@ -909,8 +908,8 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
       'restaurant_id': widget.restroData!.id.toString(),
       'table_id': widget.data!.id.toString(),
       'approx_amount': widget.data!.price.toString(),
-      'date': gender == "male" ? widget.restroData!.bookingDate.toString()  : selectedDate.toString(),
-      'time': gender == "male" ? widget.restroData!.bookingTime.toString()  :selectedTime!.format(context).toString(),
+      'date': gender == "male" || gender == "Male"? widget.restroData!.bookingDate.toString()  : selectedDate.toString(),
+      'time': gender == "male" || gender == "Male"? widget.restroData!.bookingTime.toString()  : '${selectedTime!.format(context).toString()} ${selectedTime!.period.toString().split(".")}',
       'booking_amount': widget.restroData!.bookingAmount.toString(),
       'booking_transaction_id':transID.toString(),
       'booking_payment_status':'1',
@@ -951,6 +950,7 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
     }
   }
 
+  double bookingPrice = 0, promoAmt = 0;
   Future<void> validatePromo(String promoCode) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
@@ -972,14 +972,16 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
           bool error = getdata["error"];
           String? msg = getdata["message"];
           if (!error) {
-            // var data = getdata["data"][0];
+             var data = getdata["data"][0];
 
-            // totalPrice = double.parse(data["final_total"]) + delCharge;
-            //
-            // promoAmt = double.parse(data["final_discount"]);
+             promoAmt = double.parse(data["final_discount"]);
+             setState((){
+               bookingPrice = double.parse(widget.restroData!.bookingAmount.toString()) - promoAmt!;
+             });
             // promocode = data["promo_code"];
             // isPromoValid = true;
             setSnackbar("Promo Code applied successfully!", context);
+            print("this is promo code $promoAmt");
             Navigator.pop(context);
           } else {
 
@@ -1039,6 +1041,7 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
   ///
   String? transID;
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    print("this is working here !");
    setState(() {
      transID = response.paymentId!;
    });

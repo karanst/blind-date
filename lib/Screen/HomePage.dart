@@ -170,6 +170,7 @@ class _HomePageState extends State<HomePage>
   }
 
   getRestaurants() async {
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
       lat = prefs.getDouble(LATITUDE);
       long = prefs.getDouble(LONGITUDE);
@@ -206,6 +207,7 @@ class _HomePageState extends State<HomePage>
 
 
   List<Bookings> bookingList = [];
+
   getMyBookings() async {
     var headers = {
       'Cookie': 'ci_session=aa83f4f9d3335df625437992bb79565d0973f564'
@@ -233,6 +235,7 @@ class _HomePageState extends State<HomePage>
       print(response.reasonPhrase);
     }
   }
+
   @override
   void initState() {
     super.initState();
@@ -1037,12 +1040,14 @@ class _HomePageState extends State<HomePage>
                                     : "AIzaSyB0uPBgryG9RisP8_0v50Meds1ZePMwsoY",
                                 onPlacePicked: (result) {
                                   print(result.formattedAddress);
+                                  restaurantList.clear();
                                   setState(() {
                                     address =
                                         result.formattedAddress.toString();
                                     lat = result.geometry!.location.lat;
                                     long = result.geometry!.location.lng;
                                   });
+                                  getRestaurants();
                                   Navigator.of(context).pop();
                                 },
                                 initialPosition: LatLng(

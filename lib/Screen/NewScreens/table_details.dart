@@ -650,7 +650,11 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: ElevatedButton(onPressed: (){
-                    print("this si gender and avaialbility ===>>> ${gender} and ${widget.restroData!.isDateAvailable}");
+                    print("this is booking amount ${widget.restroData!.bookingAmount}");
+                    setState(() {
+                      bookingPrice = double.parse(widget.restroData!.bookingAmount.toString());
+                    });
+                    print("this si gender and avaialbility ===>>> ${gender} and ${widget.restroData!.isDateAvailable} $bookingPrice");
                     if(gender =="male" || gender == "Male") {
                       if (widget.restroData!.isDateAvailable == true) {
                           razorpayPayment(bookingPrice);
@@ -951,6 +955,7 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
   }
 
   double bookingPrice = 0, promoAmt = 0;
+
   Future<void> validatePromo(String promoCode) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
@@ -976,7 +981,7 @@ class _TableDetailsState extends State<TableDetails> with TickerProviderStateMix
 
              promoAmt = double.parse(data["final_discount"]);
              setState((){
-               bookingPrice = double.parse(widget.restroData!.bookingAmount.toString()) - promoAmt!;
+               bookingPrice = double.parse(widget.restroData!.bookingAmount.toString()) - promoAmt;
              });
             // promocode = data["promo_code"];
             // isPromoValid = true;

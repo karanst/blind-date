@@ -6,6 +6,7 @@ import 'package:blind_date/Helper/user_custom_radio.dart';
 import 'package:blind_date/Model/my_bookings_model.dart';
 import 'package:blind_date/Model/restaurant_model.dart';
 import 'package:blind_date/Provider/SettingProvider.dart';
+import 'package:blind_date/Screen/NewScreens/booking_details.dart';
 import 'package:blind_date/Screen/NewScreens/table_details.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart' as http;
@@ -514,9 +515,21 @@ class _MyBookingsState extends State<MyBookings> with TickerProviderStateMixin {
   }
 
   Widget bookingCard(int index) {
+    String status = 'Waiting';
+    if(bookingList[index].status.toString() == "0"){
+      status = 'Waiting';
+    }else if(bookingList[index].status.toString() == "1"){
+      status = 'Processing';
+    }else if(bookingList[index].status.toString() == "2"){
+      status = 'Accepted';
+    }else if(bookingList[index].status.toString() == "3"){
+      status = 'Rejected';
+    }else{
+      status = 'Completed';
+    }
     return InkWell(
       onTap: (){
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => TableDetails(data: bookingList[index], restroData: widget.data,)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => BookingDetails(data: bookingList[index])));
       },
       child: Card(
           shape: RoundedRectangleBorder(
@@ -584,6 +597,13 @@ class _MyBookingsState extends State<MyBookings> with TickerProviderStateMixin {
                             overflow: TextOverflow.ellipsis,
                             maxLines: 2,
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5.0),
+                          child: Text('Booking Status : ',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        ),
                       ],
                     ),
 
@@ -608,6 +628,14 @@ class _MyBookingsState extends State<MyBookings> with TickerProviderStateMixin {
                             maxLines: 2,
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
 
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5.0),
+                          child: Text('${status.toString()}',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+                        ),
+
                       ],
 
                     )
@@ -623,8 +651,8 @@ class _MyBookingsState extends State<MyBookings> with TickerProviderStateMixin {
                     Container(
                       padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
                       decoration: BoxDecoration(
-                        color: colors.primary,
-                        borderRadius: BorderRadius.circular(10)
+                          color: colors.primary,
+                          borderRadius: BorderRadius.circular(10)
                       ),
                       child: Center(
                         child: Text("₹ ${bookingList[index].approxAmount.toString()}",
@@ -641,7 +669,6 @@ class _MyBookingsState extends State<MyBookings> with TickerProviderStateMixin {
             ),
           )),
     );
-
   }
 
 
@@ -816,60 +843,6 @@ class _MyBookingsState extends State<MyBookings> with TickerProviderStateMixin {
               },
               icon: Icon(Icons.arrow_back_ios, color: colors.whiteTemp,),
             ),
-            // actions: [
-            //   Padding(
-            //     padding: const EdgeInsets.all(8.0),
-            //     child: InkWell(
-            //       onTap: () async {
-            //         // var result = await Navigator.push(context, MaterialPageRoute(builder: (context)=> AddTable()));
-            //         // if(result != null){
-            //         //   getRestroTables();
-            //         // }
-            //       },
-            //       child: Container(
-            //         padding: EdgeInsets.all(8),
-            //         decoration: BoxDecoration(
-            //             border: Border.all(color: colors.whiteTemp),
-            //             borderRadius: BorderRadius.circular(30)
-            //         ),
-            //         child: Row(
-            //           mainAxisAlignment: MainAxisAlignment.center,
-            //           children: [
-            //             Text("Add Table ", style: TextStyle(
-            //                 color: colors.whiteTemp,
-            //                 fontWeight: FontWeight.w600,
-            //                 fontSize: 16
-            //             ),),
-            //             Icon(Icons.add_box, color: colors.whiteTemp,)
-            //           ],
-            //         ),
-            //       ),
-            //     ),
-            //   ),
-            //
-            //   // SizedBox(
-            //   //   height: 30,
-            //   //   child: Container(
-            //   //     height: 30,
-            //   //     width: 100,
-            //   //     decoration: BoxDecoration(
-            //   //       color: Colors.colors.whiteTemp, borderRadius: BorderRadius.circular(20)
-            //   //     ),
-            //   //     child: Center(
-            //   //       child: Row(
-            //   //         mainAxisAlignment: MainAxisAlignment.center,
-            //   //         children: [
-            //   //           Text("Add Table", style: TextStyle(
-            //   //             color: primary
-            //   //           ),),
-            //   //           Icon(Icons.add_box, color: primary,)
-            //   //         ],
-            //   //       ),
-            //   //     ),
-            //   //   ),
-            //   // )
-            //
-            // ],
           ),
         ),
         body: bodyWidget());

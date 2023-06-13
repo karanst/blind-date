@@ -6,6 +6,7 @@ import 'package:blind_date/Model/category_model.dart';
 import 'package:blind_date/Model/my_bookings_model.dart';
 import 'package:blind_date/Model/restaurant_model.dart';
 import 'package:blind_date/Screen/My_Wallet.dart';
+import 'package:blind_date/Screen/NewScreens/booking_details.dart';
 import 'package:blind_date/Screen/NewScreens/restaurant_details.dart';
 import 'package:blind_date/Screen/SendOtp.dart';
 import 'package:blind_date/Screen/my_leads_accounts.dart';
@@ -360,9 +361,21 @@ class _HomePageState extends State<HomePage>
   // }
 
   Widget bookingCard(int index) {
+    String status = 'Waiting';
+    if(bookingList[index].status.toString() == "0"){
+      status = 'Waiting';
+    }else if(bookingList[index].status.toString() == "1"){
+      status = 'Processing';
+    }else if(bookingList[index].status.toString() == "2"){
+      status = 'Accepted';
+    }else if(bookingList[index].status.toString() == "3"){
+      status = 'Rejected';
+    }else{
+      status = 'Completed';
+    }
     return InkWell(
       onTap: (){
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => TableDetails(data: bookingList[index], restroData: widget.data,)));
+         Navigator.push(context, MaterialPageRoute(builder: (context) => BookingDetails(data: bookingList[index])));
       },
       child: Card(
           shape: RoundedRectangleBorder(
@@ -430,6 +443,13 @@ class _HomePageState extends State<HomePage>
                             overflow: TextOverflow.ellipsis,
                             maxLines: 2,
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5.0),
+                          child: Text('Booking Status : ',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                        ),
                       ],
                     ),
 
@@ -453,6 +473,14 @@ class _HomePageState extends State<HomePage>
                             overflow: TextOverflow.ellipsis,
                             maxLines: 2,
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5.0),
+                          child: Text('${status.toString()}',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,  color: colors.primary)),
+                        ),
 
                       ],
 
@@ -583,18 +611,32 @@ class _HomePageState extends State<HomePage>
                                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
                           ),
                           const SizedBox(height: 5,),
-                          gender == "male" || gender == "Male"?
+
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Container(
-                                width: MediaQuery.of(context).size.width/2-70,
-                                // child: Text(restaurantList[index].address.toString(),
-                                //     overflow: TextOverflow.ellipsis,
-                                //     maxLines: 2,
-                                //     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                              Row(
+                                children: [
+                                  Text('${restaurantList[index].noOfRatings.toString()} / 5'),
+                                  Container(
+                                    // color: Colors.black54,
+                                    height: 30,
+                                    width: MediaQuery.of(context).size.width/2-100,
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: int.parse(restaurantList[index].noOfRatings.toString()),
+                                        itemBuilder: (context, index){
+                                      return Icon(Icons.star, color: Colors.amber,);
+                                    }),
+                                    // child: Text(restaurantList[index].address.toString(),
+                                    //     overflow: TextOverflow.ellipsis,
+                                    //     maxLines: 2,
+                                    //     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,  color: Theme.of(context).colorScheme.fontColor)),
+                                  ),
+
+                                ],
                               ),
-                              Padding(
+                              gender == "male" || gender == "Male"?    Padding(
                                 padding: const EdgeInsets.only(top: 10.0, right: 5),
                                 child: Container(
                                     width: MediaQuery.of(context).size.width/3 - 20,
@@ -611,10 +653,11 @@ class _HomePageState extends State<HomePage>
                                         BlinkText( title: "Available" )
                                     : Text("Not Available", style: TextStyle(color: colors.whiteTemp, fontWeight: FontWeight.w600) ,))
                                 ),
-                              ),
+                              )
+                                  : SizedBox.shrink(),
                             ],
                           )
-                          : SizedBox.shrink(),
+
 
                         ],
                       ),
